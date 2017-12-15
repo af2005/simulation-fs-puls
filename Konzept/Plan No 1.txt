@@ -1,0 +1,11 @@
+- Eine Skizze mit allen Größen und Parametern damit wir die selben Symbole für die Größen verwenden
+- Mathematische transformation einer Funktion für die Welle oder Puls beim Durchgehen des Gitters, also FFT müsste das sein können. Als
+		- Funktion im Code schreiben
+		  Als Code: Erstellung eines Pulses 
+		  		(Eingabe parameter, Form, etc) als Funktion damit dieser an die Funktion übergeben werden kann. 
+		  Evtl mit gui oder das später
+- Einbauen von Fehlstellen oder Fehlern im Gitter. 
+		- Transformation für einen Einzelspalt schreiben und dann über n-stück aufsummieren. 
+		Dadurch könnten wir einzelne Spalte herauspicken und ihnen Fehler oder andere Parameter einbauen.
+- Erstellung eines Bildes am Ende und am Ort X (vielleicht auch eine Summe von Transformationen die wir dann über eine ganze Strecke darstellen können)
+- Erweiterung auf 2 Dimensionen wenn alles funktioniert im 1 dimensionalem.
