@@ -24,10 +24,10 @@
 \section{Ebene Welle}
 Wir betrachten zunächst eine einfache ebene Welle. Diese laufe in $z$-Richtung. Wir erhalten also für das elektrische Feld $E(z,t)$
 \begin{align}
-E(z,t) = E_0 \cdot \sin(\vec{k}z-\omega t)
+E(z,t) = E_0 \cdot \sin(k z-\omega t)
 \end{align}
 
-Bzw. unter Verwendung der Frequenz $\nu$ und ohne den Wellenvektor $\vec{k} = \frac{\omega}{c}$
+Bzw. unter Verwendung der Frequenz $\nu$ und ohne die Wellenzahl $k = \frac{\omega}{c}$
 
 \begin{align}
 E(z,t) &= E_0 \cdot \sin (\frac{2\pi\nu}{c} z - 2\pi\nu t ) \\
@@ -47,11 +47,23 @@ Wir definieren als weitere Dimension für den Schirm die x-Achse ("nach oben und
 Um das Wellenfeld beim Schirm $z_S$ zu erhalten, müssen wir nun
 nach dem Huygens‘schen Prinzip alle Elementarwellen aus dem Spalt am Betrachtungsort
 überlagern, d. h. die Summe der entsprechenden Felder bilden.
+
+Mit dem Übergang zur komplexen Darstellung und Überlagerung von $N$ Wellen:
+\begin{align}
+E(z,t) &= E_0 \Big[ e^{i(k z-\omega t)} + e^{i(k (z+\Delta)-\omega t)} + e^{i(k (z+2\Delta)-\omega t)} + \dots + e^{i(k (z+(N-1)\Delta)-\omega t)} \Big] \\
+&= E_0  e^{k z-\omega t} \Big[ 1 +e^{i\Delta} + e^{i2\Delta} + \dots + e^{i(N-1)\Delta}\Big]
+\end{align}
+Der Term in der eckigen Klammer lässt sich mit der geometrischen Reihe zur $\frac{\sin(\zeta)}{\zeta}$ Funktion umschreiben.
+Die Intensität am Schirm ergibt sich nach Quadrierung zu 
+\begin{align}
+I_S = I_0 \left( \frac{\sin\left(\frac{\pi d}{\lambda}\sin \alpha\right)}{\frac{\pi d}{\lambda} \sin \alpha} \right)^2
+\end{align}
+Diese Formel sei nur später zur Verifizierung anzuwenden. Das Beugungsmuster in Frauenhoferbeugung ist nämlich allgemein durch die zweidimensionale Fouriertransformation der Amplitudentransmissionfunktion $f(z,x)$ des Beugungsobjektes gegeben. Es lässt sich mit der Fouriertransformation auch viel leichter simulieren wie das Beugungsmuster sich bei Defekten/Fehlstellen im Beugungsobjekt verändert.
 \begin{figure}[!htb]
 \centering
-\includegraphics[scale=0.8]{einzelspalt.pdf}
+\includegraphics[scale=0.7]{einzelspalt.pdf}
 \caption{Skizze mit allen relevanten Variablen für den Einzelspalt}
 \end{figure}
 
-\section{1-dim N-Spalt)}
+\section{1-dim N-Spalt}
 \end{document}
