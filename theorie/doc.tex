@@ -39,7 +39,7 @@ elektrischen Feldstärke der Lichtwelle:
 \begin{align}
 I_\text{Licht} \propto E^2 
 \end{align}
-\section{Einfache Objekte}
+\section{Beugung an einfachen Objekten}
 \subsection{Vorüberlegungen zum Einzelspalt}
 Wir definieren unseren Einzelspalt (und später unser Gitter) auf den Punkt $z=0$. Die Betrachtung des Beugungsmusters ist im Abstand $z_\text{Schirm}$ oder kurz $z_S$ dahinter. 
 Unsere Spaltgröße ist definiert als $a$, ähnlich später unsere Gitterkonstante $a$. Wir verwenden Frauenhofer Beugung ($z_S \gg a$). Frauenhofer Beugung verlangt außerdem, dass eine ebene Welle auf den Spalt trifft.
@@ -73,6 +73,7 @@ Allgemein ist die Wellenfunktion des Beugungsbildes gegeben durch
 
 \begin{align}
 \Psi (u,v) = \int \int f(x,y) \exp\Big(-i(ux+vy)\Big) dx dy
+\label{eq:wellenfkt_beugungsbild}
 \end{align}
 wobei $u= k_0 \sin\alpha_x$ und $v=k_0\sin\alpha_y$
 \subsubsection{Einzelspalt}
@@ -90,16 +91,22 @@ Die Faltung dieser beiden Funktionen ist nach dem Faltungstheorem das Produkt de
 
 Wir finden also für unsere Wellenfunktion nach dem Spalt
 \begin{align}
-\Psi(\alpha_x,\alpha_y) &= g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)]\\
-&= \int_{-a/2}^{a/2} e^{-ixk\sin(\alpha_x)} dx \int_{-\infty}^\infty e^{-iyk\sin(\alpha_y)}dy\\
+\Psi(\alpha_x,\alpha_y) &= \int_{-a/2}^{a/2} e^{-ixk\sin(\alpha_x)} dx \int_{-\infty}^\infty e^{-iyk\sin(\alpha_y)}dy\\
 &= a \frac{\sin(\frac{1}{2} ak\sin(\alpha_x))}{\frac{1}{2} ak\sin(\alpha_x)}\delta\Big(k \sin(\alpha_y)\Big)\\
 &= a \frac{\sin( \frac{a\pi}{\lambda} \sin(\alpha_x))}{\frac{a\pi}{\lambda} \sin(\alpha_x)}\delta\Big(k \sin(\alpha_y)\Big)
 \end{align}
 Mit der Dirac-Funktion $\delta$. Vergleiche mit Gleichung \ref{eq:einzelspalt_vorueberlegung}.
-\subsubsection{Beugung an einer Rechteckblende}
-Nur als kurzes Beispiel: Ein kleines Rechteck der Höhe $h$ und Breite $b$ würde sehr ähnlich zu oben ergeben:
+
+Die Intensitätsverteilungen ergeben sich immer aus:
 \begin{align}
-\Psi(\alpha_x,\alpha_y) &= g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)] \\
+I(u,v) &= |\Psi(u,v)|^2\\
+\text{beim Einzelspalt: \quad}
+|\Psi(u,v)|^2 &= |\Psi(u,0)|^2 
+\end{align}
+\subsubsection{Beugung an einer Rechteckblende}
+Nur als kurzes Beispiel: Ein kleines rechteckiges Loch der Höhe $h$ und Breite $b$ würde sehr ähnlich zu oben ergeben:
+\begin{align}
+\Psi(\alpha_x,\alpha_y) &= g(x) \cdot h(y) \\
 &= \int_{-b/2}^{b/2} e^{-ixk\sin(\alpha_x)} dx \int_{-h/2}^{h/2} e^{-iyk\sin(\alpha_y)}dy\\
 &= bh \frac{\sin(\frac{1}{2} bk\sin(\alpha_x))}{\frac{1}{2} bk\sin(\alpha_x)} \cdot \frac{\sin(\frac{1}{2} hk\sin(\alpha_x))}{\frac{1}{2} hk\sin(\alpha_x)}\\
 \end{align}
@@ -113,5 +120,30 @@ Für unser Beugungsmuster (auch rotationssymmetrisch) haben wir den Koordinatens
 \begin{align}
 x= \xi \cos \phi \qquad y= \xi \sin \phi
 \end{align}
+Die Lochblende habe den Radius $R$.
 
+Wir erhalten aus Gleichung \ref{eq:wellenfkt_beugungsbild}
+\begin{align}
+\Psi(u,v)=\Psi(\alpha_x,\alpha_y) = \int_0^R \int_0^{2\pi} \exp\Big[ -i (\rho \xi \cos\phi\cos\theta + \rho\xi\sin\phi\sin\theta) \Big] \rho d\rho d\theta
+\end{align}
+
+Dieses Integral kann man mit den Besselfunktionen lösen oder halt mit Numerik, was wir tun werden.
+Zur Kontrolle. Das Ergebnis ergibt sich zu:
+\begin{align}
+\Psi (\xi,\phi ) = \pi R^2 \left( \frac{2J_1(\xi R)}{\xi R} \right)
+\end{align}
+mit 
+\begin{align}
+J_{1}(x)=\sum _{{r=0}}^{\infty }{\frac  {(-1)^{r}({\frac  {x}{2}})^{{2r+1 }}}{\Gamma (1 +r+1)r!}}\, 
+\end{align}
+\subsection{Überlagerung von Beugungsmustern}
+Aufgrund der Eigenschaften der Fouriertransformierten, können wir die Überlagerung von Beugungsmustern als algebrische Summe der Transmissionsfunktion einfacher Objekte aufschreiben. Im Allgemeinen muss bei der Transformierten des Gesamtobjektes, Real- und Imaginärteil getrennt addiert werden. Nur für den Sonderfall von Punktsymmetrie bezüglich der Mitte sind die Transformierten reell. 
+
+Beispielsweise kann bei drei Spalten das Beugungsmuster der beiden äußeren zu dem inneren hinzuaddieren. Bei 4 Spalten die beiden inneren zu den äußeren beiden (die äußeren haben den dreifachen Abstand wie die beiden inneren).
+\section{Interferenz}
+\subsection{Doppelspalt}
+Wir betrachten nun die Überlagerung der beiden Beugungsmuster der Einzelspalte. Die Eigenschaften der Fouriertransformation machen dieses Vorgehen sehr viel einfacher, da wir wissen, dass
+\begin{align}
+g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)] \\
+\end{align}
 \end{document}
