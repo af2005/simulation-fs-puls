@@ -28,7 +28,7 @@ Wir betrachten zunächst eine einfache ebene Welle. Diese laufe in $z$-Richtung.
 E(z,t) = E_0 \cdot \sin(k z-\omega t)
 \end{align}
 
-Bzw. unter Verwendung der Frequenz $\nu$ und ohne die Wellenzahl $k = \frac{\omega}{c}$
+Bzw. unter Verwendung der Frequenz $\nu$ und ohne den Wellenvektor $|\vec{k}| := k = \frac{\omega}{c} = \frac{2\pi}{\lambda}$
 
 \begin{align}
 E(z,t) &= E_0 \cdot \sin (\frac{2\pi\nu}{c} z - 2\pi\nu t ) \\
@@ -39,8 +39,8 @@ elektrischen Feldstärke der Lichtwelle:
 \begin{align}
 I_\text{Licht} \propto E^2 
 \end{align}
-\section{Einzelspalt}
-\subsection{Vorüberlegungen}
+\section{Einfache Objekte}
+\subsection{Vorüberlegungen zum Einzelspalt}
 Wir definieren unseren Einzelspalt (und später unser Gitter) auf den Punkt $z=0$. Die Betrachtung des Beugungsmusters ist im Abstand $z_\text{Schirm}$ oder kurz $z_S$ dahinter. 
 Unsere Spaltgröße ist definiert als $a$, ähnlich später unsere Gitterkonstante $a$. Wir verwenden Frauenhofer Beugung ($z_S \gg a$). Frauenhofer Beugung verlangt außerdem, dass eine ebene Welle auf den Spalt trifft.
 
@@ -58,16 +58,18 @@ E(z,t) &= E_0 \Big[ e^{i(k z-\omega t)} + e^{i(k (z+\Delta)-\omega t)} + e^{i(k 
 Der Term in der eckigen Klammer lässt sich mit der geometrischen Reihe zur $\frac{\sin(\zeta)}{\zeta}$ Funktion umschreiben.
 Die Intensität am Schirm ergibt sich nach Quadrierung zu 
 \begin{align}
-I_S = I_0 \left( \frac{\sin\left(\frac{\pi a}{\lambda}\sin \alpha\right)}{\frac{\pi a}{\lambda} \sin \alpha} \right)^2
+I_S = I_0 \left( \frac{\sin\left(\frac{\pi a}{\lambda}\sin \alpha_x\right)}{\frac{\pi a}{\lambda} \sin \alpha_x} \right)^2
+\label{eq:einzelspalt_vorueberlegung}
 \end{align}
 Diese Formel sei nur später zur Verifizierung anzuwenden. Das Beugungsmuster in Frauenhoferbeugung ist nämlich allgemein durch die zweidimensionale Fouriertransformation der Amplitudentransmissionfunktion $f(z,x)$ des Beugungsobjektes gegeben. Es lässt sich mit der Fouriertransformation auch viel leichter simulieren wie das Beugungsmuster sich bei Defekten/Fehlstellen im Beugungsobjekt verändert.
 \begin{figure}[!htb]
 \centering
-\includegraphics[scale=0.7]{einzelspalt.pdf}
+\includegraphics[width=\textwidth]{einzelspalt.pdf}
 \caption{Skizze mit allen relevanten Variablen für den Einzelspalt}
 \end{figure}
 
 \subsection{Fouriertransformation}
+\subsubsection{Einzelspalt}
 Wir können unseren Einzelspalt mit der Transmissionsfunktion $f(x,y)$ beschreiben. Wir zerlegen diese Funktion in eine Faltung von Funktionen von $x$ und $y$
 \begin{align}
 g(x) = \begin{cases} 
@@ -82,10 +84,19 @@ Die Faltung dieser beiden Funktionen ist nach dem Faltungstheorem das Produkt de
 
 Wir finden also für unsere Wellenfunktion nach dem Spalt
 \begin{align}
-&\Psi(\alpha_x,\alpha_y) = g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)]\\
+\Psi(\alpha_x,\alpha_y) &= g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)]\\
 &= \int_{-a/2}^{a/2} e^{-ixk\sin(\alpha_x)} dx \int_{-\infty}^\infty e^{-iyk\sin(\alpha_y)}dy\\
-&= a \frac{\sin(\frac{1}{2} ak\sin(\alpha_x))}{\frac{1}{2} ak\sin(\alpha_x)}\delta(k \sin(\alpha_y))
+&= a \frac{\sin(\frac{1}{2} ak\sin(\alpha_x))}{\frac{1}{2} ak\sin(\alpha_x)}\delta\Big(k \sin(\alpha_y)\Big)\\
+&= a \frac{\sin( \frac{a\pi}{\lambda} \sin(\alpha_x))}{\frac{a\pi}{\lambda} \sin(\alpha_x)}\delta\Big(k \sin(\alpha_y)\Big)
 \end{align}
-Mit der Deltafunktion $\delta$.
-\section{1-dim N-Spalt}
+Mit der Dirac-Funktion $\delta$. Vergleiche mit Gleichung \ref{eq:einzelspalt_vorueberlegung}.
+\subsubsection{Beugung an einer Rechteckblende}
+Nur als kurzes Beispiel: Ein kleines Rechteck der Höhe $h$ und Breite $b$ würde sehr ähnlich zu oben ergeben:
+\begin{align}
+\Psi(\alpha_x,\alpha_y) &= g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)] \\
+&= \int_{-b/2}^{b/2} e^{-ixk\sin(\alpha_x)} dx \int_{-h/2}^{h/2} e^{-iyk\sin(\alpha_y)}dy\\
+&= bh \frac{\sin(\frac{1}{2} bk\sin(\alpha_x))}{\frac{1}{2} bk\sin(\alpha_x)} \cdot \frac{\sin(\frac{1}{2} hk\sin(\alpha_x))}{\frac{1}{2} hk\sin(\alpha_x)}\\
+\end{align}
+\subsubsection{Beugung an einer Lochblende}
+Wir führen natürlich 
 \end{document}
