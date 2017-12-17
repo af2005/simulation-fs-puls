@@ -137,7 +137,7 @@ f_\text{LB}(\rho) = \begin{cases}
 
 Wir erhalten aus Gleichung \ref{eq:wellenfkt_beugungsbild}
 \begin{align}
-\Psi(u,v)=\Psi(\alpha_x,\alpha_y) = \int_0^R \int_0^{2\pi} \exp\Big[ -i (\rho \xi \cos\phi\cos\theta + \rho\xi\sin\phi\sin\theta) \Big] \rho d\rho d\theta
+\Psi(u,v)=\Psi(\alpha_x,\alpha_y) = \int_0^R \int_0^{2\pi} \exp\Big[ -i (\rho \xi \cos\phi\cos\alpha + \rho\xi\sin\phi\sin\alpha) \Big] \rho d\rho d\alpha
 \end{align}
 
 Dieses Integral kann man mit den Besselfunktionen lösen oder halt mit Numerik, was wir tun werden.
@@ -185,4 +185,5 @@ Intensitätsverteilung sollte so aussehen:
 \begin{align}
 |\Psi_\text{DoppelLB} (\xi,\phi)|^2 = 4 \cos^2 \left(\frac{d\pi \sin\alpha_x}{\lambda}\right)\pi^2 R^4 \left[\frac{2J_1(\xi R)}{\xi R}\right]^2
 \end{align}
+
 \end{document}
