@@ -69,6 +69,12 @@ Diese Formel sei nur später zur Verifizierung anzuwenden. Das Beugungsmuster in
 \end{figure}
 
 \subsection{Fouriertransformation}
+Allgemein ist die Wellenfunktion des Beugungsbildes gegeben durch
+
+\begin{align}
+\Psi (u,v) = \int \int f(x,y) \exp\Big(-i(ux+vy)\Big) dx dy
+\end{align}
+wobei $u= k_0 \sin\alpha_x$ und $v=k_0\sin\alpha_y$
 \subsubsection{Einzelspalt}
 Wir können unseren Einzelspalt mit der Transmissionsfunktion $f(x,y)$ beschreiben. Wir zerlegen diese Funktion in eine Faltung von Funktionen von $x$ und $y$
 \begin{align}
@@ -98,5 +104,14 @@ Nur als kurzes Beispiel: Ein kleines Rechteck der Höhe $h$ und Breite $b$ würd
 &= bh \frac{\sin(\frac{1}{2} bk\sin(\alpha_x))}{\frac{1}{2} bk\sin(\alpha_x)} \cdot \frac{\sin(\frac{1}{2} hk\sin(\alpha_x))}{\frac{1}{2} hk\sin(\alpha_x)}\\
 \end{align}
 \subsubsection{Beugung an einer Lochblende}
-Wir führen natürlich 
+Wir führen natürlich Polarkoordinaten ein. Für die Lochblende haben wir
+\begin{align}
+x= \rho \cos \theta \qquad y = \rho \sin \theta
+\end{align}
+
+Für unser Beugungsmuster (auch rotationssymmetrisch) haben wir den Koordinatensatz:
+\begin{align}
+x= \xi \cos \phi \qquad y= \xi \sin \phi
+\end{align}
+
 \end{document}
