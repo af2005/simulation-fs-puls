@@ -11,10 +11,13 @@
 
 %% Useful packages
 \usepackage{amsmath}
+\usepackage{amssymb}
+
 \usepackage{mathrsfs}
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\newcommand{\ff}[1]{\mathscr{F}\left[#1\right]}
 
 \title{Mathematischer Hintergrund und Variablenbenennung}
 \author{Simon Jung, Bernd Lienau, Alexander Franke}
@@ -82,6 +85,7 @@ Wir können unseren Einzelspalt mit der Transmissionsfunktion $f(x,y)$ beschreib
 g(x) = \begin{cases} 
 1  &\text{für } |x| <  \frac{a}{2} \\
 0 & \text{sonst}\end{cases}
+\label{eq:einzelspalt}
 \end{align}
 \begin{align}
 h(y) = 1
@@ -142,13 +146,23 @@ Aufgrund der Eigenschaften der Fouriertransformierten, können wir die Überlage
 Beispielsweise kann bei drei Spalten das Beugungsmuster der beiden äußeren zu dem inneren hinzuaddieren. Bei 4 Spalten die beiden inneren zu den äußeren beiden (die äußeren haben den dreifachen Abstand wie die beiden inneren).
 \section{Interferenz}
 \subsection{Doppelspalt}
-Wir betrachten nun die Überlagerung der beiden Beugungsmuster der Einzelspalte. Die Eigenschaften der Fouriertransformation machen dieses Vorgehen sehr viel einfacher, da wir wissen, dass
-\begin{align}
-g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)] \\
-\end{align}
 \begin{figure}[!htb]
 \centering
 
-\includegraphics[width=\textwidth]{doppelspalt.pdf}
+\includegraphics[width=0.5\textwidth]{doppelspalt.pdf}
 \end{figure}
+Wir betrachten nun die Überlagerung der beiden Beugungsmuster der Einzelspalte. Die Eigenschaften der Fouriertransformation machen dieses Vorgehen sehr viel einfacher, da wir wissen, dass
+\begin{align}
+g(x) \circledast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)] \\
+\end{align}
+
+Aus Gleichung \ref{eq:einzelspalt} kennen wir die mathematische Beschreibung eines Einzelspaltes der Breite $a$. Wir nehmen nun an das wir zwei Spalte im Abstand $d$ haben. Wir finden also für unsere Gesamtheit mithilfe von zwei Dirac-Deltafunktionen.
+\begin{align}
+f_{\text{DS}}(x) &= \Bigg[ \delta\left(x-\frac{d}{2}\right) + \delta\left(x+\frac{d}{2}\right) \Bigg]  \circledast f_\text{ES} \\
+\Rightarrow \ff{f_{\text{DS}}(x) } &= \ff{ \delta\left(x-\frac{d}{2}\right) + \delta\left(x+\frac{d}{2}\right)  } \cdot \ff{f_\text{ES}}
+\end{align}
+Wir sollten durch unsere Simulation zu folgendem Ergebnis kommen:
+\begin{align}
+I(\alpha_x,0) = |\Psi(\alpha_x,0)|^2 =  \cos^2 \left(\frac{\pi d \sin(\alpha_x)}{\lambda}\right) \frac{\sin^2(\pi a \sin(\alpha_x)/\lambda)}{(\pi a \sin(\alpha)/\lambda)^2}
+\end{align}
 \end{document}
