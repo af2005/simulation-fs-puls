@@ -11,6 +11,7 @@
 
 %% Useful packages
 \usepackage{amsmath}
+\usepackage{mathrsfs}
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
@@ -39,6 +40,7 @@ elektrischen Feldstärke der Lichtwelle:
 I_\text{Licht} \propto E^2 
 \end{align}
 \section{Einzelspalt}
+\subsection{Vorüberlegungen}
 Wir definieren unseren Einzelspalt (und später unser Gitter) auf den Punkt $z=0$. Die Betrachtung des Beugungsmusters ist im Abstand $z_\text{Schirm}$ oder kurz $z_S$ dahinter. 
 Unsere Spaltgröße ist definiert als $a$, ähnlich später unsere Gitterkonstante $a$. Wir verwenden Frauenhofer Beugung ($z_S \gg a$). Frauenhofer Beugung verlangt außerdem, dass eine ebene Welle auf den Spalt trifft.
 
@@ -65,5 +67,23 @@ Diese Formel sei nur später zur Verifizierung anzuwenden. Das Beugungsmuster in
 \caption{Skizze mit allen relevanten Variablen für den Einzelspalt}
 \end{figure}
 
+\subsection{Fouriertransformation}
+Wir können unseren Einzelspalt mit der Transmissionsfunktion $f(x,y)$ beschreiben. Wir zerlegen diese Funktion in eine Faltung von Funktionen von $x$ und $y$
+\begin{align}
+g(x) = \begin{cases} 
+1  &\text{für } |x| <  \frac{a}{2} \\
+0 & \text{sonst}\end{cases}
+\end{align}
+\begin{align}
+h(y) = 1
+\end{align}
+Wir haben einen Spalt der Dicke a, der in y-Richtung unendlich weit ausgedehnt ist.
+Die Faltung dieser beiden Funktionen ist nach dem Faltungstheorem das Produkt der Fouriertransformationen.
+
+Wir finden also für unsere Wellenfunktion nach dem Spalt
+\begin{align}
+&\Psi(\alpha_x,\alpha_y) = g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)]\\
+&= \int_{-b/2}^{b/2} e^{-ixk\sin(\alpha_x)} dx \int_{-\infty}^\infty e^{-iyk\sin(\alpha_y)}dy
+\end{align}
 \section{1-dim N-Spalt}
 \end{document}
