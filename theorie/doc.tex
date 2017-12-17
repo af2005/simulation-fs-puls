@@ -22,9 +22,11 @@
 \title{Mathematischer Hintergrund und Variablenbenennung}
 \author{Simon Jung, Bernd Lienau, Alexander Franke}
 \date{\today}
+\makeindex
+
 \begin{document}
 \maketitle
-
+\tableofcontents
 \section{Ebene Welle}
 Wir betrachten zunächst eine einfache ebene Welle. Diese laufe in $z$-Richtung. Wir erhalten also für das elektrische Feld $E(z,t)$
 \begin{align}
@@ -82,7 +84,7 @@ wobei $u= k_0 \sin\alpha_x$ und $v=k_0\sin\alpha_y$
 \subsubsection{Einzelspalt}
 Wir können unseren Einzelspalt mit der Transmissionsfunktion $f(x,y)$ beschreiben. Wir zerlegen diese Funktion in eine Faltung von Funktionen von $x$ und $y$
 \begin{align}
-g(x) = \begin{cases} 
+f_\text{ES}(x) = \begin{cases} 
 1  &\text{für } |x| <  \frac{a}{2} \\
 0 & \text{sonst}\end{cases}
 \label{eq:einzelspalt}
@@ -91,9 +93,8 @@ g(x) = \begin{cases}
 h(y) = 1
 \end{align}
 Wir haben einen Spalt der Dicke a, der in y-Richtung unendlich weit ausgedehnt ist.
-Die Faltung dieser beiden Funktionen ist nach dem Faltungstheorem das Produkt der Fouriertransformationen.
 
-Wir finden also für unsere Wellenfunktion nach dem Spalt
+Wir finden also für unsere Wellenfunktion mit Gleichung \ref{eq:wellenfkt_beugungsbild} nach dem Spalt
 \begin{align}
 \Psi(\alpha_x,\alpha_y) &= \int_{-a/2}^{a/2} e^{-ixk\sin(\alpha_x)} dx \int_{-\infty}^\infty e^{-iyk\sin(\alpha_y)}dy\\
 &= a \frac{\sin(\frac{1}{2} ak\sin(\alpha_x))}{\frac{1}{2} ak\sin(\alpha_x)}\delta\Big(k \sin(\alpha_y)\Big)\\
@@ -125,6 +126,14 @@ Für unser Beugungsmuster (auch rotationssymmetrisch) haben wir den Koordinatens
 x= \xi \cos \phi \qquad y= \xi \sin \phi
 \end{align}
 Die Lochblende habe den Radius $R$.
+
+Wir haben folgende Transmissionsfunktion 
+\begin{align}
+f_\text{LB}(\rho) = \begin{cases} 
+1  &\text{für } \rho^2 = (x+y)^2 <  R^2 \\
+0 & \text{sonst}\end{cases}
+\label{eq:lochblende}
+\end{align}
 
 Wir erhalten aus Gleichung \ref{eq:wellenfkt_beugungsbild}
 \begin{align}
@@ -164,5 +173,16 @@ f_{\text{DS}}(x) &= \Bigg[ \delta\left(x-\frac{d}{2}\right) + \delta\left(x+\fra
 Wir sollten durch unsere Simulation zu folgendem Ergebnis kommen:
 \begin{align}
 I(\alpha_x,0) = |\Psi(\alpha_x,0)|^2 =  \cos^2 \left(\frac{\pi d \sin(\alpha_x)}{\lambda}\right) \frac{\sin^2(\pi a \sin(\alpha_x)/\lambda)}{(\pi a \sin(\alpha)/\lambda)^2}
+\end{align}
+
+\subsection{Doppelte Lochblende}
+Völlig analog zu oben haben wir für zwei Lochblenden im Abstand $d$:
+\begin{align}
+f_{\text{DoppelLB}}(x) &= \Bigg[ \delta\left(x-\frac{d}{2}\right) + \delta\left(x+\frac{d}{2}\right) \Bigg]  \circledast f_\text{LB} \\
+\Rightarrow \ff{f_{\text{DoppelLB}}(x) } &= \ff{ \delta\left(x-\frac{d}{2}\right) + \delta\left(x+\frac{d}{2}\right)  } \cdot \ff{f_\text{LB}}
+\end{align}
+Intensitätsverteilung sollte so aussehen:
+\begin{align}
+|\Psi_\text{DoppelLB} (\xi,\phi)|^2 = 4 \cos^2 \left(\frac{d\pi \sin\alpha_x}{\lambda}\right)\pi^2 R^4 \left[\frac{2J_1(\xi R)}{\xi R}\right]^2
 \end{align}
 \end{document}
