@@ -58,7 +58,7 @@ E(z,t) &= E_0 \Big[ e^{i(k z-\omega t)} + e^{i(k (z+\Delta)-\omega t)} + e^{i(k 
 Der Term in der eckigen Klammer lässt sich mit der geometrischen Reihe zur $\frac{\sin(\zeta)}{\zeta}$ Funktion umschreiben.
 Die Intensität am Schirm ergibt sich nach Quadrierung zu 
 \begin{align}
-I_S = I_0 \left( \frac{\sin\left(\frac{\pi d}{\lambda}\sin \alpha\right)}{\frac{\pi d}{\lambda} \sin \alpha} \right)^2
+I_S = I_0 \left( \frac{\sin\left(\frac{\pi a}{\lambda}\sin \alpha\right)}{\frac{\pi a}{\lambda} \sin \alpha} \right)^2
 \end{align}
 Diese Formel sei nur später zur Verifizierung anzuwenden. Das Beugungsmuster in Frauenhoferbeugung ist nämlich allgemein durch die zweidimensionale Fouriertransformation der Amplitudentransmissionfunktion $f(z,x)$ des Beugungsobjektes gegeben. Es lässt sich mit der Fouriertransformation auch viel leichter simulieren wie das Beugungsmuster sich bei Defekten/Fehlstellen im Beugungsobjekt verändert.
 \begin{figure}[!htb]
@@ -83,7 +83,9 @@ Die Faltung dieser beiden Funktionen ist nach dem Faltungstheorem das Produkt de
 Wir finden also für unsere Wellenfunktion nach dem Spalt
 \begin{align}
 &\Psi(\alpha_x,\alpha_y) = g(x) \ast h(y) = \mathscr{F}[g(x)] \cdot \mathscr{F}[h(y)]\\
-&= \int_{-b/2}^{b/2} e^{-ixk\sin(\alpha_x)} dx \int_{-\infty}^\infty e^{-iyk\sin(\alpha_y)}dy
+&= \int_{-a/2}^{a/2} e^{-ixk\sin(\alpha_x)} dx \int_{-\infty}^\infty e^{-iyk\sin(\alpha_y)}dy\\
+&= a \frac{\sin(\frac{1}{2} ak\sin(\alpha_x))}{\frac{1}{2} ak\sin(\alpha_x)}\delta(k \sin(\alpha_y))
 \end{align}
+Mit der Deltafunktion $\delta$.
 \section{1-dim N-Spalt}
 \end{document}
