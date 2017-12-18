@@ -150,7 +150,7 @@ def dirac(x,mu):
 def Transmission_Einzelspalt(X,a):
 	#Einzelspalt der Dicke a
 	output = []
-	for x in X:
+	for x in X[0]:
 		if (np.fabs(x) < a/2):
 			output.append(1)
 		else:
