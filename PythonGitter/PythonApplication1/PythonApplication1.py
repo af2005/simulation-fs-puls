@@ -31,7 +31,7 @@ import argparse
 def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
 	parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=1)
-	parser.add_argument('--spalte', dest='n', help='Die Anzahl der Spalte. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
+	parser.add_argument('--n', dest='n', help='Die Anzahl der Spalte. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
 	parser.add_argument('--gitterkonst', dest='a', help='Gitterkonstante/Spaltbreite in um',default=3)
 	parser.add_argument('--wellenlaenge', dest='wl',help='Wellenlänge in nm',default=800 )
 	parser.add_argument('--schirmabstand', dest='zs', help='Schirmabstand in cm',default=350)
@@ -66,12 +66,13 @@ def main():
 	wl = args.wl * 1e-9
 	zs = args.zs * 1e-2
 	a  = args.a  * 1e-6
-	n  = args.n
+	n  = int(args.n)
 	d  = args.d  * 1e-3
 	h  = args.h  * 1e-3
 
-	lowerrange = -a/2
-	upperrange = a/2
+	lowerrange = -(a/2) 
+	upperrange = +(a/2)
+	print(lowerrange)
 
 	#__________________________________________________________________
 	# Mehrere Gitter / Wellenlängen Überlagerung
@@ -144,28 +145,27 @@ def dirac(x,mu):
 	#Das hier ist eine gängige Approximation für mu->infinity
 	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
 	 
-def fourierEinzelspalt(xArray,a,wl,lowerrange,upperrange):
+def fourierNspalt(xArray,a,wl,lowerrange,upperrange,n,d):
 	output = []
 	for value in xArray:
-		output.append(fourierEinzelspaltIntegrate(value,a,wl,lowerrange,upperrange))
+		output.append(fourierNspaltIntegrate(value,a,wl,lowerrange,upperrange,n,d))
 	return output
 
-def fourierEinzelspaltIntegrate(alphax,a,wl,lowerrange,upperrange):
+def fourierNspaltIntegrate(alphax,a,wl,lowerrange,upperrange,n,d):
 	u = k(wl)*math.sin(alphax)
 	#print(u)
-	f = lambda x: Tranmission_Einzelspalt(x,a) *exp(-i()*u*x)
+	f = lambda x: Transmission_n_Spalte(x,a,n,d) *exp(-i()*u*x)
 	r = 1#(1/(2*pi)**0.5)
-	integral =  np.square(np.multiply(integrate.quad(f,lowerrange,upperrange),r))
+	integral = integrate.quad(f,-a/2,a/2) * 
+	integral =  np.square(np.multiply(integral,r))
 		
 	return integral
-	
-
 
 ####__________________________________________________________________
 #### Transmissionsfunktion verschiedener Objekte
 ####__________________________________________________________________
 
-def Tranmission_Einzelspalt(x,a):
+def Transmission_Einzelspalt(x,a):
 	if math.fabs(x) <= a/2:
 		return 1
 	else:
@@ -179,7 +179,7 @@ def Transmission_Lochblende(rho,R):
 	else: 
 		return 0
 
-def Transmission_n_Spalte(x,n,a,d):
+def Transmission_n_Spalte(x,a,n,d):
 	# Fouriertransformierte von Transmission_Einzelspalt
 	# Siehe Glg 29 im Theory doc.pdf
 	# https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
@@ -244,9 +244,11 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 		t2 = t1
 		plt.figure(1)
 		plt.subplot(211)
-		plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
+		#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
+		print (n)
+		plt.plot(t1,fourierNspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,n,d) , 'r--')
 		plt.subplot(212)
-		plt.plot(t2,interferenz_einzelspalt_manuell(t2,0,a,wl,zs),'b--')
+		plt.plot(t2,interferenz_einzelspalt_manuell(t2,n,a,wl,zs),'b--')
 		plt.show()
 	elif (n==2):
 		print('')
