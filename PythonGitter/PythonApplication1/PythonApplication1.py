@@ -108,7 +108,7 @@ def main():
 
 	#__________________________________________________________________
 	# Schauen welche Funktion man ausführen muss spalt, gitter, gitterMitFehlstellen... 
-	spalt(n,a,d,h,wl,zs,lowerrange,upperrange)
+	spalt(n,a,d,h,wl,zs)
 
 
 	#__________________________________________________________________
@@ -145,18 +145,19 @@ def dirac(x,mu):
 	#Das hier ist eine gängige Approximation für mu->infinity
 	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
 	 
-def fourierNspalt(xArray,a,wl,lowerrange,upperrange,n,d):
+def fourierNspalt(xArray,a,wl,n,d):
 	output = []
 	for value in xArray:
-		output.append(fourierNspaltIntegrate(value,a,wl,lowerrange,upperrange,n,d))
+		output.append(fourierNspaltIntegrate(value,a,wl,n,d))
 	return output
 
-def fourierNspaltIntegrate(alphax,a,wl,lowerrange,upperrange,n,d):
+def fourierNspaltIntegrate(alphax,a,wl,n,d):
 	u = k(wl)*math.sin(alphax)
 	#print(u)
-	f = lambda x: Transmission_n_Spalte(x,a,n,d) *exp(-i()*u*x)
+	f = lambda x: Transmission_Einzelspalt(x,a) *exp(-i()*u*x) * fft(Transmission_n_Spalte(x,a,n,d))
+
 	r = 1#(1/(2*pi)**0.5)
-	integral = integrate.quad(f,-a/2,a/2) * 
+	integral = integrate.quad(f,-a/2,a/2) 
 	integral =  np.square(np.multiply(integral,r))
 		
 	return integral
@@ -234,24 +235,20 @@ def interferenz_doppelspalt_manuell(X,Y,a,d,wl,zs):
 
 
 
-def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
+def spalt(n,a,d,h,wl,zs):
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
 	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	if (n==1):
-		t1 = np.arange(-3., 3., 0.1)
-		t2 = t1
-		plt.figure(1)
-		plt.subplot(211)
-		#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
-		print (n)
-		plt.plot(t1,fourierNspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,n,d) , 'r--')
-		plt.subplot(212)
-		plt.plot(t2,interferenz_einzelspalt_manuell(t2,n,a,wl,zs),'b--')
-		plt.show()
-	elif (n==2):
-		print('')
+	t1 = np.arange(-3., 3., 0.1)
+	t2 = t1
+	plt.figure(1)
+	plt.subplot(211)
+	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
+	plt.plot(t1,fourierNspalt(arcsin(t1/zs),a,wl,n,d) , 'r--')
+	plt.subplot(212)
+	plt.plot(t2,interferenz_einzelspalt_manuell(t2,n,a,wl,zs),'b--')
+	plt.show()
 
 		
 
