@@ -186,4 +186,21 @@ Intensitätsverteilung sollte so aussehen:
 |\Psi_\text{DoppelLB} (\xi,\phi)|^2 = 4 \cos^2 \left(\frac{d\pi \sin\alpha_x}{\lambda}\right)\pi^2 R^4 \left[\frac{2J_1(\xi R)}{\xi R}\right]^2
 \end{align}
 
+\subsection{Viele-Spalte}
+Für eine beliebige Anzahl der Spalte brauchen wir eine Fallunterscheidung. Falls die Anzahl ungerade ist, ist genau in der Mitte ein Spalt und bei $\pm$nd weitere Spalte.
+Für eine gerade Anzahl haben wir keinen Spalt in der Mitte, dafür aber bei $\pm$n(d/2).
+Für N groß spielt diese Fallunterscheidung keine Rolle mehr und wird bei der weiteren Beschreibung nicht beachtet. Es sei immer ein Spalt in der Mitte.
+
+Ähnlich wie beim Doppelspalt brauchen wir eine Faltung von einer Transmissionsfunktions des Gitters mit der des Einzelspaltes.
+\begin{align}
+f_\text{Gitter} \circledast f_\text{ES} = \left[\sum_{n=-n/2}^{n/2} \delta\left(x-nd\right)\right]  \circledast f_\text{ES}
+\end{align}
+Die Fouriertransformation wird zu 
+\begin{align}
+\Psi(\alpha_x) = \sum_{m=-n/2}^{n/2}\exp\Big(-ik\sin(\alpha_x)ma\Big) = \sum_{m=-n/2}^{n/2}\exp\Big(-ik\sin(\alpha_x)a\Big)^m
+\end{align}
+
+\subsection{Interferenzmuster eines periodischen 2D-Gitters}
+
+
 \end{document}
