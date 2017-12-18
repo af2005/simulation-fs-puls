@@ -70,6 +70,9 @@ def main():
 	d  = args.d  * 1e-3
 	h  = args.h  * 1e-3
 
+	lowerrange = -a/2
+	upperrange = a/2
+
 	#__________________________________________________________________
 	# Mehrere Gitter / Wellenlängen Überlagerung
 	
@@ -104,7 +107,7 @@ def main():
 
 	#__________________________________________________________________
 	# Schauen welche Funktion man ausführen muss spalt, gitter, gitterMitFehlstellen... 
-	spalt(n,a,d,h,wl,zs)
+	spalt(n,a,d,h,wl,zs,lowerrange,upperrange)
 
 
 	#__________________________________________________________________
@@ -141,17 +144,29 @@ def dirac(x,mu):
 	#Das hier ist eine gängige Approximation für mu->infinity
 	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
 	 
+def fourierEinzelspalt(xArray,a,wl,lowerrange,upperrange):
+	output = []
+	for value in xArray:
+		output.append(fourierEinzelspaltIntegrate(value,a,wl,lowerrange,upperrange))
+	return output
+
+def fourierEinzelspaltIntegrate(alphax,a,wl,lowerrange,upperrange):
+	u = k(wl)*math.sin(alphax)
+	#print(u)
+	f = lambda x: Tranmission_Einzelspalt(x,a) *exp(-i()*u*x)
+	r = 1#(1/(2*pi)**0.5)
+	integral =  np.square(np.multiply(integrate.quad(f,lowerrange,upperrange),r))
+		
+	return integral
+	
 
 
 ####__________________________________________________________________
 #### Transmissionsfunktion verschiedener Objekte
 ####__________________________________________________________________
 
-def Transmission_Einzelspalt(x,a):
-	#Einzelspalt der Dicke a
-	#x ist die Variable
-
-	if (math.fabs(x) < a/2):
+def Tranmission_Einzelspalt(x,a):
+	if math.fabs(x) <= a/2:
 		return 1
 	else:
 		return 0
@@ -175,13 +190,13 @@ def Transmission_n_Spalte(x,n,a,d):
 	i = 1
 
 	while i<=n/2:
-		if n % 2 = 0:
+		if (n % 2) == 0:
 			gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
 		else:
 			gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
 		i =i+1
 	
-	if n=1:
+	if n==1:
 		gesamttransmission = Transmission_Einzelspalt(x,a)
 	
 	return gesamttransmission
@@ -195,23 +210,16 @@ def Transmission_Gitter(x,y,n,a,d):
 ####__________________________________________________________________
 	
 
-def interferenz_einzelspalt(X,Y,a,wl,zs):
+def interferenz_einzelspalt_manuell(X,Y,a,wl,zs):
 
-	alphax = tan(X/zs)
-	alphay = tan(Y/zs)
-	return (((sinc(0.5*a*k(wl)*sin(alphax))))**2)
-	
-def interferenz_einzelspalt_fft(X,Y,a,wl,zs):
+	alphax = arctan(X/zs)
+	alphay = arctan(Y/zs)
+	return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
 
-	alphax = tan(X/zs)
-	alphay = tan(Y/zs)
-	f_ES = Transmission_Einzelspalt(sin(alphax)*k(w1),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
-	return (fft(f_ES)**2)
-
-def interferenz_doppelspalt(X,Y,a,d,wl,zs):
+def interferenz_doppelspalt_manuell(X,Y,a,d,wl,zs):
 	n=2
-	alphax = tan(X/zs)
-	alphay = tan(Y/zs)
+	alphax = arctan(X/zs)
+	alphay = arctan(Y/zs)
 	#Formel 8 folgend
 	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
 
@@ -226,21 +234,19 @@ def interferenz_doppelspalt(X,Y,a,d,wl,zs):
 
 
 
-def spalt(n,a,d,h,wl,zs):
+def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
 	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	
 	if (n==1):
-		x_1 = np.linspace(-3, 3, 300)
-		y_1 = np.linspace(-3, 3, 300)
-		X,Y = np.meshgrid(x_1,y_1)
-		Z = interferenz_einzelspalt(X,Y,a,wl,zs).T
-		plt.figure()
-		#auf einem anderen Colourmesh wie gray sieht man nur das erste Maximum.
-		plt.pcolormesh(Y,X, Z,cmap=plt.get_cmap("pink"))
-		#plt.gca().set_aspect("equal") # x- und y-Skala im gleichen Maßstaab
+		t1 = np.arange(-3., 3., 0.1)
+		t2 = t1
+		plt.figure(1)
+		plt.subplot(211)
+		plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
+		plt.subplot(212)
+		plt.plot(t2,interferenz_einzelspalt_manuell(t2,0,a,wl,zs),'b--')
 		plt.show()
 	elif (n==2):
 		print('')
