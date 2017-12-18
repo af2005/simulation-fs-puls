@@ -132,6 +132,9 @@ def c():
 def sinc(x):
 	return sin(x)/x
 
+def i():
+	return complex(0,1)
+
 def dirac(x,mu):
 	#ich weiß noch nicht wie es am besten ist hier dran zu gehen. 
 	#Das hier ist eine gängige Approximation für mu->infinity
@@ -169,6 +172,7 @@ def Transmission_n_Spalte(x,n,a,d):
 	# für den Doppelspalt bzw. n-Spalt haben wir also 
 	gesamttransmission = 0.
 	i = 1
+
 	while i<=n:
 		gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2) + Transmission_Einzelspalt (x+d*(2*i-1)/2)
 		i =i+1
@@ -186,8 +190,12 @@ def interferenz_einzelspalt(X,Y,a,wl,zs):
 	alphay = tan(Y/zs)
 	return (((sinc(0.5*a*k(wl)*sin(alphax))))**2)
 
-def interferenz_doppelspalt(X,Y):
+def interferenz_doppelspalt(X,Y,a,d,wl,zs):
 	n=2
+	alphax = tan(X/zs)
+	alphay = tan(Y/zs)
+	#Formel 8 folgend
+	psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
 
 
 	
