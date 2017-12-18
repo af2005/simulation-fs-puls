@@ -150,7 +150,6 @@ def dirac(x,mu):
 def Transmission_Einzelspalt(x,a):
 	#Einzelspalt der Dicke a
 	#x ist die Variable
-
 	if (math.fabs(x) < a/2):
 		return 1
 	else:
@@ -213,7 +212,7 @@ def interferenz_einzelspalt_fft(X,Y,a,wl,zs):
 
 	alphax = tan(X/zs)
 	alphay = tan(Y/zs)
-	f_ES = Transmission_Einzelspalt(sin(alphax)*k(w1),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
+	f_ES = Transmission_Einzelspalt(sin(alphax)*k(wl),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
 	return (fft(f_ES)**2)
 
 def interferenz_einzelspalt_fft_alex(X,Y,a,wl,zs):
