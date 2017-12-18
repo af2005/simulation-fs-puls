@@ -144,16 +144,16 @@ def dirac(x,mu):
 	#Das hier ist eine gängige Approximation für mu->infinity
 	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
 	 
-def fourierEinzelspalt(xArray,a,wl,lowerrange,upperrange):
+def fourierEinzelspalt(xArray,a,wl,lowerrange,upperrange,d):
 	output = []
 	for value in xArray:
-		output.append(fourierEinzelspaltIntegrate(value,a,wl,lowerrange,upperrange))
+		output.append(fourierEinzelspaltIntegrate(value,a,wl,lowerrange,upperrange,d))
 	return output
 
-def fourierEinzelspaltIntegrate(alphax,a,wl,lowerrange,upperrange):
+def fourierEinzelspaltIntegrate(alphax,a,wl,lowerrange,upperrange,d):
 	u = k(wl)*math.sin(alphax)
 	#print(u)
-	f = lambda x: Tranmission_Einzelspalt(x,a) *exp(-i()*u*x)
+	f = lambda x: Transmission_n_Spalte(x,2,a,d) *exp(-i()*u*x)
 	r = 1#(1/(2*pi)**0.5)
 	integral =  np.square(np.multiply(integrate.quad(f,lowerrange,upperrange),r))
 		
@@ -165,7 +165,7 @@ def fourierEinzelspaltIntegrate(alphax,a,wl,lowerrange,upperrange):
 #### Transmissionsfunktion verschiedener Objekte
 ####__________________________________________________________________
 
-def Tranmission_Einzelspalt(x,a):
+def Transmission_Einzelspalt(x,a):
 	if math.fabs(x) <= a/2:
 		return 1
 	else:
@@ -244,7 +244,7 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 		t2 = t1
 		plt.figure(1)
 		plt.subplot(211)
-		plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
+		plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,d) , 'r--')
 		plt.subplot(212)
 		plt.plot(t2,interferenz_einzelspalt_manuell(t2,0,a,wl,zs),'b--')
 		plt.show()
