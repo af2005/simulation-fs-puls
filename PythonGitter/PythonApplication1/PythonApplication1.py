@@ -209,13 +209,13 @@ def interferenz_einzelspalt_fft_intensitaet(X,Y,a,wl,zs):
 	alphay = arctan(Y/zs)
 	f_ES = Transmission_Einzelspalt(X,a)  #### Transmissionsfunktion des Einzelspaltes für die FFT
 	output=np.square(fft.fft(f_ES))
-	output=fft.fftshift(output)
+	#output=fft.fftshift(output)
 	return (output)
 	
 def interferenz_einzelspalt_fft_koordinate(X,Y,a,wl,zs):
+	
 
-
-	return 
+	return X
 
 def interferenz_doppelspalt(X,Y,a,d,wl,zs):
 	n=2
@@ -246,11 +246,11 @@ def spalt(n,a,d,h,wl,zs):
 		y_1 = np.linspace(-3, 3, 300)
 		X,Y = np.meshgrid(x_1,y_1)
 		
-		x_2=np.linspace(-3.0 * 1e-6, 3.0 * 1e-6, 300)
-		y_2=np.linspace(-3.0 * 1e-6, 3.0 * 1e-6, 300)
+		x_2=np.linspace(-1/3.0, 1/3.0, 300)
+		y_2=np.linspace(-1/3.0, 1/3.0, 300)
 		X_2,Y_2 = np.meshgrid(x_2,y_2)
-		Z = interferenz_einzelspalt(X,Y,a,wl,zs).T
-		A = interferenz_einzelspalt_fft_1d(X,Y,a,wl,zs).T #Mit fft erstellt
+		Z = interferenz_einzelspalt(X_2,Y_2,a,wl,zs).T
+		A = interferenz_einzelspalt_fft_1d(X_2,Y_2,a,wl,zs).T #Mit fft erstellt
 		fig, ax = plt.subplots(nrows=2, ncols=1)
 		#auf einem anderen Colourmesh wie gray sieht man nur das erste Maximum.
 		plt.subplot(2, 1, 1)
