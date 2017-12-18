@@ -193,13 +193,25 @@ Für N groß spielt diese Fallunterscheidung keine Rolle mehr und wird bei der w
 
 Ähnlich wie beim Doppelspalt brauchen wir eine Faltung von einer Transmissionsfunktions des Gitters mit der des Einzelspaltes.
 \begin{align}
-f_\text{Gitter} \circledast f_\text{ES} = \left[\sum_{n=-n/2}^{n/2} \delta\left(x-nd\right)\right]  \circledast f_\text{ES}
+f_\text{Gitter} \circledast f_\text{ES} = \left[\sum_{n=-N/2}^{N/2} \delta\left(x-nd\right)\right]  \circledast f_\text{ES}
 \end{align}
 Die Fouriertransformation wird zu 
 \begin{align}
-\Psi(\alpha_x) = \sum_{m=-n/2}^{n/2}\exp\Big(-ik\sin(\alpha_x)ma\Big) = \sum_{m=-n/2}^{n/2}\exp\Big(-ik\sin(\alpha_x)a\Big)^m
+\Psi(\alpha_x) = \left[\sum_{m=-N/2}^{N/2}\exp\Big(-ik\sin(\alpha_x)md\Big)\right]  \circledast f_\text{ES} = \left[\sum_{m=-N/2}^{N/2}\exp\Big(-ik\sin(\alpha_x)d\Big)^m\right]  \circledast f_\text{ES}
+\end{align}
+Lassen wir nun N gegen unendlich laufen haben wir 
+\begin{align}
+\Psi(\alpha_x) = \sum_{m=-\infty}^\infty \delta \left((k\sin\alpha_x - \frac{2\pi m}{d}\right)
 \end{align}
 
+Für endliches N erhalten wir mit der geometrischen Reihe
+\begin{align}
+	\Psi(\alpha_x) = \frac{1- \exp(-ik \sin(\alpha_x)Nd)}{1-\exp(-ik\sin(\alpha_x)d)}
+\end{align}
+Damit erhalten wir folgende Intensität
+\begin{align}
+I_\text{Gitter} = |\Psi(\alpha_x)|^2 = \frac{\sin^2(Nk\sin(\alpha_k) d /2)}{\sin^2(k\sin(\alpha_k) d /2)}
+\end{align}
 \subsection{Interferenzmuster eines periodischen 2D-Gitters}
 
 
