@@ -150,7 +150,6 @@ def dirac(x,mu):
 def Transmission_Einzelspalt(x,a):
 	#Einzelspalt der Dicke a
 	#x ist die Variable
-
 	if (math.fabs(x) < a/2):
 		return 1
 	else:
@@ -175,13 +174,13 @@ def Transmission_n_Spalte(x,n,a,d):
 	i = 1
 
 	while i<=n/2:
-		if n % 2 = 0:
+		if (n % 2) == 0:
 			gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
 		else:
 			gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
 		i =i+1
 	
-	if n=1:
+	if n==1:
 		gesamttransmission = Transmission_Einzelspalt(x,a)
 	
 	return gesamttransmission
@@ -205,7 +204,7 @@ def interferenz_einzelspalt_fft(X,Y,a,wl,zs):
 
 	alphax = tan(X/zs)
 	alphay = tan(Y/zs)
-	f_ES = Transmission_Einzelspalt(sin(alphax)*k(w1),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
+	f_ES = Transmission_Einzelspalt(sin(alphax)*k(wl),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
 	return (fft(f_ES)**2)
 
 def interferenz_doppelspalt(X,Y,a,d,wl,zs):
@@ -236,7 +235,7 @@ def spalt(n,a,d,h,wl,zs):
 		x_1 = np.linspace(-3, 3, 300)
 		y_1 = np.linspace(-3, 3, 300)
 		X,Y = np.meshgrid(x_1,y_1)
-		Z = interferenz_einzelspalt(X,Y,a,wl,zs).T
+		Z = interferenz_einzelspalt_fft(X,Y,a,wl,zs).T
 		plt.figure()
 		#auf einem anderen Colourmesh wie gray sieht man nur das erste Maximum.
 		plt.pcolormesh(Y,X, Z,cmap=plt.get_cmap("pink"))
