@@ -160,6 +160,19 @@ def Transmission_Lochblende(rho,R):
 	else: 
 		return 0
 
+def Transmission_n_Spalte(x,n,a,d):
+	# Fouriertransformierte von Transmission_Einzelspalt
+	# Siehe Glg 29 im Theory doc.pdf
+	# https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
+	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
+	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
+	# für den Doppelspalt bzw. n-Spalt haben wir also 
+	gesamttransmission = 0.
+	i = 1
+	while i<=n:
+		gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2) + Transmission_Einzelspalt (x+d*(2*i-1)/2)
+		i =i+1
+	return gesamttransmission
 
 ####__________________________________________________________________
 #### Intensitätsverteilungen für verschiedene Objekte. Ich weiß nicht ob
@@ -175,6 +188,8 @@ def interferenz_einzelspalt(X,Y,a,wl,zs):
 
 def interferenz_doppelspalt(X,Y):
 	n=2
+
+
 	
 		
 ####__________________________________________________________________
@@ -203,8 +218,8 @@ def spalt(n,a,d,h,wl,zs):
 		plt.show()
 	elif (n==2):
 		print('')
-		#Fouriertransformierte von Transmission_Einzelspalt
-		#Siehe Glg 29 im Theory doc.pdf
+
+		
 
 def gitter(a,wl,zs):
 	print('nothing here')	
