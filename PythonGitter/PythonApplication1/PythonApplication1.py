@@ -175,13 +175,13 @@ def Transmission_n_Spalte(x,n,a,d):
 	i = 1
 
 	while i<=n/2:
-		if n % 2 = 0:
+		if (n % 2) == 0:
 			gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
 		else:
 			gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
 		i =i+1
 	
-	if n=1:
+	if n==1:
 		gesamttransmission = Transmission_Einzelspalt(x,a)
 	
 	return gesamttransmission
@@ -201,11 +201,11 @@ def interferenz_einzelspalt(X,Y,a,wl,zs):
 	alphay = arctan(Y/zs)
 	return (((sinc(0.5*a*k(wl)*sin(alphax))))**2)
 	
-def interferenz_einzelspalt_fft_1d(X,a,wl,zs):
+def interferenz_einzelspalt_fft_1d(X,Y,a,wl,zs):
 
 	alphax = arctan(X/zs)
 	alphay = arctan(Y/zs)
-	f_ES = Transmission_Einzelspalt(X*k*sin(alphax),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
+	f_ES = Transmission_Einzelspalt(X*k(wl)*sin(alphax),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
 	return (fft.fft(f_ES)**2)
 
 def interferenz_doppelspalt(X,Y,a,d,wl,zs):
