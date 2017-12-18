@@ -196,14 +196,14 @@ def interferenz_einzelspalt_fft(X,Y,a,wl,zs):
 	alphax = tan(X/zs)
 	alphay = tan(Y/zs)
 	f_ES = Transmission_Einzelspalt(sin(alphax)*k(w1),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
-	return ((scipy.fftpack.fft(f_ES)**2)
+	return (scipy.fftpack.fft(f_ES)**2)
 
 def interferenz_doppelspalt(X,Y,a,d,wl,zs):
 	n=2
 	alphax = tan(X/zs)
 	alphay = tan(Y/zs)
 	#Formel 8 folgend
-	psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
+	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
 
 
 	
