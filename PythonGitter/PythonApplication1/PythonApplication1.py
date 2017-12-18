@@ -179,6 +179,9 @@ def Transmission_n_Spalte(x,n,a,d):
 		i =i+1
 	return gesamttransmission
 
+def Transmission_Gitter(x,y,n,a,d):
+	return Transmission_n_Spalte(x,n,a,d) * Transmission_n_Spalte(y,n,a,d)
+
 ####__________________________________________________________________
 #### Intensitätsverteilungen für verschiedene Objekte. Ich weiß nicht ob
 #### wir das am Ende so machen können. Für einen Einzelspalt geht es
