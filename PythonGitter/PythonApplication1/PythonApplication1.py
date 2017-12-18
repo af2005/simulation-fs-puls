@@ -154,7 +154,7 @@ def fourierNspalt(xArray,a,wl,n,d):
 def fourierNspaltIntegrate(alphax,a,wl,n,d):
 	u = k(wl)*math.sin(alphax)
 	#print(u)
-	f = lambda x: Transmission_Einzelspalt(x,a) *exp(-i()*u*x) * fft(Transmission_n_Spalte(x,a,n,d))
+	f = lambda x: Transmission_Einzelspalt(x,a) *exp(-i()*u*x) * (exp(i()*u*d/2) + exp(-i()*u*d/2))
 
 	r = 1#(1/(2*pi)**0.5)
 	integral = integrate.quad(f,-a/2,a/2) 
