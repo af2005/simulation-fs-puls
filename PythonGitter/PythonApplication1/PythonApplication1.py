@@ -189,6 +189,14 @@ def Transmission_n_Spalte(x,n,a,d):
 def Transmission_Gitter(x,y,n,a,d):
 	return Transmission_n_Spalte(x,n,a,d) * Transmission_n_Spalte(y,n,a,d)
 
+def Transmission_Gitter_mit_Fehlstelle(x,y,n,a,d,Fehlstellen):
+	#wir gehen von m Fehlstellen aus
+	#Fehlstellen ist ein 2xm Array mit den x und y Positionen aller Fehlstellen
+	if(x==Fehlstelle_x and y==Fehlstelle_y):
+		return 0
+	else:
+		return Transmission_Gitter(x,y,n,a,d)
+
 ####__________________________________________________________________
 #### Intensitätsverteilungen für verschiedene Objekte. Ich weiß nicht ob
 #### wir das am Ende so machen können. Für einen Einzelspalt geht es
