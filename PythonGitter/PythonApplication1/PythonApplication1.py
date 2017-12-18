@@ -70,8 +70,8 @@ def main():
 	d  = args.d  * 1e-3
 	h  = args.h  * 1e-3
 
-	lowerrange = -a/2
-	upperrange = a/2
+	lowerrange = -n*d-a/2
+	upperrange = n*d+a/2
 
 	#__________________________________________________________________
 	# Mehrere Gitter / Wellenlängen Überlagerung
@@ -186,9 +186,12 @@ def Transmission_n_Spalte(x,n,a,d):
 	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
 	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
 	# für den Doppelspalt bzw. n-Spalt haben wir also 
-	gesamttransmission = 0.
+	gesamttransmission = 0
 	i = 1
 
+	if n==1:
+		gesamttransmission = Transmission_Einzelspalt(x,a)
+		
 	while i<=n/2:
 		if (n % 2) == 0:
 			gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
@@ -196,8 +199,7 @@ def Transmission_n_Spalte(x,n,a,d):
 			gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
 		i =i+1
 	
-	if n==1:
-		gesamttransmission = Transmission_Einzelspalt(x,a)
+	
 	
 	return gesamttransmission
 
