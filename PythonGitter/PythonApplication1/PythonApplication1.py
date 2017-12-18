@@ -246,7 +246,8 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 		t2 = t1
 		plt.figure(1)
 		plt.subplot(211)
-		plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,d) , 'r--')
+		#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,d) , 'r--')
+		plt.plot(t1,Transmission_n_Spalte(arcsin(t1/zs),2,a,d), 'r--')
 		plt.subplot(212)
 		plt.plot(t2,interferenz_einzelspalt_manuell(t2,0,a,wl,zs),'b--')
 		plt.show()
