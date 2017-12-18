@@ -209,7 +209,7 @@ def interferenz_einzelspalt_fft_intensitaet(X,Y,a,wl,zs):
 	alphay = arctan(Y/zs)
 	f_ES = Transmission_Einzelspalt(X,a)  #### Transmissionsfunktion des Einzelspaltes für die FFT
 	output=np.square(fft(f_ES))
-	#output=np.fft.fftshift(output)
+	output=np.fft.fftshift(output)
 	return (output)
 	
 def interferenz_einzelspalt_fft_koordinate(X,Y,a,wl,zs):
