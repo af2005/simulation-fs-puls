@@ -14,6 +14,8 @@ from numpy import arcsin as arcsin
 from numpy import arccos as arccos
 from numpy import arctan as arctan
 
+from numpy.fft import fft as fft
+
 
 import csv
 import pandas as pd
@@ -53,8 +55,7 @@ def main():
 	print("   Gitterkonstante/Spaltbreite in um          :  " + str(args.a))
 	print("   Wellenlänge in  nm                         :  " + str(args.wl))
 	print("   Schirmabstand in cm                        :  " + str(args.zs))
-
-
+	print('')
 	print('------------------------------------------------------------------------------')
 
 	#__________________________________________________________________
@@ -102,12 +103,10 @@ def main():
 	# Schauen welche Funktion man ausführen muss spalt, gitter, gitterMitFehlstellen... 
 	spalt(n,a,d,h,wl,zs)
 
-def spalt(n,a,d,wl,sz):
 
 	#__________________________________________________________________
 	# Ende der main()
 
-	print (transmission_Einzelspalt(2,a))
 
 ####__________________________________________________________________
 #### Hilfsvariablen/funktionen. Muss leider so. Python ist etwas eigen 
