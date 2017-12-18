@@ -102,10 +102,12 @@ def main():
 	# Schauen welche Funktion man ausführen muss spalt, gitter, gitterMitFehlstellen... 
 	spalt(n,a,d,h,wl,zs)
 
+def spalt(n,a,d,wl,sz):
 
 	#__________________________________________________________________
 	# Ende der main()
 
+	print (transmission_Einzelspalt(2,a))
 
 ####__________________________________________________________________
 #### Hilfsvariablen/funktionen. Muss leider so. Python ist etwas eigen 
