@@ -20,6 +20,7 @@ from numpy import pi as pi
 
 
 import csv
+import scipy.fftpack
 import pandas as pd
 import scipy.integrate as integrate
 
@@ -189,6 +190,13 @@ def interferenz_einzelspalt(X,Y,a,wl,zs):
 	alphax = tan(X/zs)
 	alphay = tan(Y/zs)
 	return (((sinc(0.5*a*k(wl)*sin(alphax))))**2)
+	
+def interferenz_einzelspalt_fft(X,Y,a,wl,zs):
+
+	alphax = tan(X/zs)
+	alphay = tan(Y/zs)
+	f_ES = Transmission_Einzelspalt(sin(alphax)*k(w1),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
+	return ((scipy.fftpack.fft(f_ES)**2)
 
 def interferenz_doppelspalt(X,Y,a,d,wl,zs):
 	n=2
