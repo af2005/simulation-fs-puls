@@ -206,7 +206,7 @@ def interferenz_einzelspalt_fft_1d(X,Y,a,wl,zs):
 	alphax = arctan(X/zs)
 	alphay = arctan(Y/zs)
 	f_ES = Transmission_Einzelspalt(X,a)
- 	f_ES = f_ES*k(wl)*sin(alphax)   #### Transmissionsfunktion des Einzelspaltes für die FFT
+	f_ES = f_ES*k(wl)*sin(alphax)   #### Transmissionsfunktion des Einzelspaltes für die FFT
 	return (fft.fft(f_ES)**2)
 
 def interferenz_doppelspalt(X,Y,a,d,wl,zs):
