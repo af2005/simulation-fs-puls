@@ -147,14 +147,16 @@ def dirac(x,mu):
 #### Transmissionsfunktion verschiedener Objekte
 ####__________________________________________________________________
 
-def Transmission_Einzelspalt(x,a):
+def Transmission_Einzelspalt(X,a):
 	#Einzelspalt der Dicke a
-	#x ist die Variable
-
-	if (np.fabs(x[0]) < a/2):
-		return 1
-	else:
-		return 0
+	output = []
+	for x in X:
+		if (np.fabs(x) < a/2):
+			output.append(1)
+		else:
+			output.append(0)
+			
+	return np.array(output)
 
 def Transmission_Lochblende(rho,R):
 	#einzelnes Loch mit Radius R
