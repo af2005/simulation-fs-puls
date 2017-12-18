@@ -197,21 +197,21 @@ def Transmission_Gitter(x,y,n,a,d):
 
 def interferenz_einzelspalt(X,Y,a,wl,zs):
 
-	alphax = tan(X/zs)
-	alphay = tan(Y/zs)
+	alphax = arctan(X/zs)
+	alphay = arctan(Y/zs)
 	return (((sinc(0.5*a*k(wl)*sin(alphax))))**2)
 	
-def interferenz_einzelspalt_fft(X,Y,a,wl,zs):
+def interferenz_einzelspalt_fft_1d(X,a,wl,zs):
 
-	alphax = tan(X/zs)
-	alphay = tan(Y/zs)
-	f_ES = Transmission_Einzelspalt(sin(alphax)*k(w1),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
-	return (fft(f_ES)**2)
+	alphax = arctan(X/zs)
+	alphay = arctan(Y/zs)
+	f_ES = Transmission_Einzelspalt(X*k*sin(alphax),a)   #### Transmissionsfunktion des Einzelspaltes für die FFT
+	return (fft.fft(f_ES)**2)
 
 def interferenz_doppelspalt(X,Y,a,d,wl,zs):
 	n=2
-	alphax = tan(X/zs)
-	alphay = tan(Y/zs)
+	alphax = arctan(X/zs)
+	alphay = arctan(Y/zs)
 	#Formel 8 folgend
 	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
 
@@ -237,10 +237,14 @@ def spalt(n,a,d,h,wl,zs):
 		y_1 = np.linspace(-3, 3, 300)
 		X,Y = np.meshgrid(x_1,y_1)
 		Z = interferenz_einzelspalt(X,Y,a,wl,zs).T
-		plt.figure()
+		A = interferenz_einzelspalt_fft_1d(X,Y,a,wl,zs).T #Mit fft erstellt
+		fig, ax = plt.subplots(nrows=2, ncols=1)
 		#auf einem anderen Colourmesh wie gray sieht man nur das erste Maximum.
+		plt.subplot(2, 1, 1)
 		plt.pcolormesh(Y,X, Z,cmap=plt.get_cmap("pink"))
 		#plt.gca().set_aspect("equal") # x- und y-Skala im gleichen Maßstaab
+		plt.subplot(2, 1, 2)
+		plt.pcolormesh(Y,X, A,cmap=plt.get_cmap("green"))
 		plt.show()
 	elif (n==2):
 		print('')
