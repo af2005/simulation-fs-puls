@@ -1,10 +1,9 @@
 
+*.log
+*.out
+*.toc
+*.idx
 *.aux
 
-*.idx
 
-*.out
-
-*.gz
-
-*.toc
+theorie/doc\.synctex\.gz
