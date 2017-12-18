@@ -13,8 +13,10 @@ from numpy import tan as tan
 from numpy import arcsin as arcsin
 from numpy import arccos as arccos
 from numpy import arctan as arctan
+from numpy import exp as exp
 
 from numpy.fft import fft as fft
+from numpy import pi as pi
 
 
 import csv
@@ -129,6 +131,12 @@ def c():
 
 def sinc(x):
 	return sin(x)/x
+
+def dirac(x,mu):
+	#ich weiß noch nicht wie es am besten ist hier dran zu gehen. 
+	#Das hier ist eine gängige Approximation für mu->infinity
+	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
+	 
 
 
 ####__________________________________________________________________
