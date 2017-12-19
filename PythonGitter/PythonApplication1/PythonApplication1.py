@@ -174,9 +174,10 @@ def fourierNspaltIntegrate(alphax,a,wl,n,d):
 	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
 	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
 	# für den Doppelspalt bzw. n-Spalt haben wir also 
-	u = k(wl)*math.sin(alphax)
+	u = k(wl)*sin(alphax)
 	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-	f = lambda x: Transmission_Einzelspalt(x,a) *exp(-i()*u*x) 
+	vorfaktor = 1
+	f = lambda x:  vorfaktor * Transmission_Einzelspalt(x,a) *exp(-i()*u*x) 
 	r = 0
 	#Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
 	#Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
@@ -184,14 +185,18 @@ def fourierNspaltIntegrate(alphax,a,wl,n,d):
 	#die Funktion f mit der Transmission eines Spaltes festgelegt.
 	#Hier ist also noch eine Verbesserung notwendig, die uns ermoeglicht unterschiedlich breite
 	#Spalte einzubauen.
+	
 	mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
 	for pkt in mittelpunkteDerLoecher:
 		r = r + (exp(i()*u*pkt))
-
+	
 	if(n==1):
 		r = 1
+	
 	integral = complex_int(f,-a/2,a/2) 
-	integral =  np.square(np.multiply(integral,r))
+	#scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
+	#matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
+	integral =  scipy.real(np.square(vorfaktor * np.multiply(integral,r)))
 		
 	return integral
 
@@ -200,7 +205,7 @@ def fourierNspaltIntegrate(alphax,a,wl,n,d):
 ####__________________________________________________________________
 
 def Transmission_Einzelspalt(x,a):
-	if math.fabs(x) <= a/2:
+	if math.fabs(x) < a/2:
 		return 1
 	else:
 		return 0
@@ -262,18 +267,13 @@ def interferenz_einzelspalt_manuell(X,a,wl,zs):
 	alphax = arctan(X/zs)
 	return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
 
-def interferenz_doppelspalt_manuell(X,a,d,wl,zs):
-	alphax = arctan(X/zs)
-	u = k(wl)*sin(alphax)
-	#Formel 8 folgend
-	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
-	return np.square((cos(u*d/2) * ( (sin(a*u/2)) / (a*u/2))))
- 
 def interferenz_Nspalt_manuell(X,a,d,wl,zs,N):
 	alphax = arctan(X/zs)
 	#alphay = arctan(Y/zs)
-	return ((N*sin(pi*N*d/wl*sin(alphax))/(sin(pi*a/wl*sin(alphax))) * a * sin(pi*a/wl*sin(alphax))/(pi*a/wl*sin(alphax)))**2)
-	
+	return ((N*sin(pi*N*d/wl*sin(alphax))/(sin(pi*d/wl*sin(alphax))) * a * sinc(pi*a/wl*sin(alphax)))**2)
+
+'''	
+#vermutlich Falsch! Max Intensitaet
 def interferenz_doppelspalt_manuell2(X,a,d,wl,zs): 
 	n=2
 	alphax = arctan(X/zs)
@@ -282,6 +282,7 @@ def interferenz_doppelspalt_manuell2(X,a,d,wl,zs):
 	#Formel 8 folgend
 	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
 	return((cos(u*d/2)*sin(a*u/2)/(a*u/2))**2)	
+'''
 ####__________________________________________________________________
 #### Hauptfunktionen für n Spalte, Gitter, Gitter mit Fehlstelle etc..
 #### Aufzurufen aus der main()
@@ -295,19 +296,14 @@ def spalt(n,a,d,h,wl,zs):
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
 	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	t1 = np.arange(-3., 3., 0.01)
+	t1 = np.arange(-3., 3., 0.005)
 	t2 = t1
 	plt.figure(1)
-	plt.subplot(311)
+	#plt.subplot(311)
 	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
 	plt.plot(t1,fourierNspalt(arcsin(t1/zs),a,wl,n,d) , 'r-')
-	plt.subplot(312)
-	if (n == 1):
-		plt.plot(t2,interferenz_einzelspalt_manuell(t2,a,wl,zs),'b-')
-	elif (n==2):
-		plt.plot(t2,interferenz_doppelspalt_manuell(t2,a,d,wl,zs),'b-')
-	plt.subplot(313)
-	plt.plot(t2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b-')
+	#plt.subplot(212)
+	plt.plot(t2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
 	plt.show()
 
 		
