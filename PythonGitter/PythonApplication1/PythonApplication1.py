@@ -35,7 +35,7 @@ def main():
 	parser.add_argument('--gitterkonst', dest='a', help='Gitterkonstante/Spaltbreite in um',default=3)
 	parser.add_argument('--wellenlaenge', dest='wl',help='Wellenlänge in nm',default=800 )
 	parser.add_argument('--schirmabstand', dest='zs', help='Schirmabstand in cm',default=350)
-	parser.add_argument('--spaltbreite', dest='d', help='Spaltbreite in mm',default=1)
+	parser.add_argument('--spaltbreite', dest='d', help='Spaltbreite in mm',default=0.01)
 	parser.add_argument('--spalthoehe', dest='h', help='Spalthoehe in mm',default=20)
 
 
@@ -143,20 +143,36 @@ def dirac(x,mu):
 	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
 	 
 def fourierNspalt(xArray,a,wl,n,d):
+	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
+	#beim Integrieren bzw bei der fft schief geht.
 	output = []
 	for value in xArray:
 		output.append(fourierNspaltIntegrate(value,a,wl,n,d))
 	return output
 
 def fourierNspaltIntegrate(alphax,a,wl,n,d):
+	# Fouriertransformierte von Transmission_Einzelspalt
+	# Siehe Glg 29 im Theory doc.pdf
+	# https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
+	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
+	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
+	# für den Doppelspalt bzw. n-Spalt haben wir also 
 	u = k(wl)*math.sin(alphax)
-	#print(u)
+	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
 	f = lambda x: Transmission_Einzelspalt(x,a) *exp(-i()*u*x) 
-	r = 1
+	r = 0
+	#Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
+	#Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
+	#Fouriertransformation dieser Dirac funktion. Die Breite a dieser ganzen Spalte ist durch
+	#die Funktion f mit der Transmission eines Spaltes festgelegt.
+	#Hier ist also noch eine Verbesserung notwendig, die uns ermoeglicht unterschiedlich breite
+	#Spalte einzubauen.
 	mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
 	for pkt in mittelpunkteDerLoecher:
-		r += (exp(i()*u*pkt))
+		r = r + (exp(i()*u*pkt))
 
+	if(n==1):
+		r = 1
 	integral = integrate.quad(f,-a/2,a/2) 
 	integral =  np.square(np.multiply(integral,r))
 		
@@ -198,16 +214,11 @@ def Transmission_Mittelpunkte(n,d):
 	return mittelpunkte
 
 def Transmission_n_Spalte(x,a,n,d):
-	# Fouriertransformierte von Transmission_Einzelspalt
-	# Siehe Glg 29 im Theory doc.pdf
-	# https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
-	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
-	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
-	# für den Doppelspalt bzw. n-Spalt haben wir also 
+
 	gesamttransmission = 0.
 	i = 1
 	
-	if n==1:
+	if (n % 2) == 1:
 		gesamttransmission = Transmission_Einzelspalt(x,a)
 	
 	while i<=n/2:
@@ -229,19 +240,17 @@ def Transmission_Gitter(x,y,n,a,d):
 ####__________________________________________________________________
 	
 
-def interferenz_einzelspalt_manuell(X,Y,a,wl,zs):
+def interferenz_einzelspalt_manuell(X,a,wl,zs):
 
 	alphax = arctan(X/zs)
-	alphay = arctan(Y/zs)
 	return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
 
-def interferenz_doppelspalt_manuell(X,Y,a,d,wl,zs):
-	n=2
+def interferenz_doppelspalt_manuell(X,a,d,wl,zs):
 	alphax = arctan(X/zs)
-	alphay = arctan(Y/zs)
+	u = k(wl)*sin(alphax)
 	#Formel 8 folgend
 	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
-
+	return np.square((cos(u*d/2) * ( (sin(a*u/2)) / (a*u/2))))
 
 	
 		
@@ -258,14 +267,17 @@ def spalt(n,a,d,h,wl,zs):
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
 	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	t1 = np.arange(-3., 3., 0.1)
+	t1 = np.arange(-3., 3., 0.01)
 	t2 = t1
 	plt.figure(1)
 	plt.subplot(211)
 	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
-	plt.plot(t1,fourierNspalt(arcsin(t1/zs),a,wl,n,d) , 'r--')
+	plt.plot(t1,fourierNspalt(arcsin(t1/zs),a,wl,n,d) , 'r-')
 	plt.subplot(212)
-	plt.plot(t2,interferenz_einzelspalt_manuell(t2,n,a,wl,zs),'b--')
+	if (n == 1):
+		plt.plot(t2,interferenz_einzelspalt_manuell(t2,a,wl,zs),'b-')
+	elif (n==2):
+		plt.plot(t2,interferenz_doppelspalt_manuell(t2,a,d,wl,zs),'b-')
 	plt.show()
 
 		
