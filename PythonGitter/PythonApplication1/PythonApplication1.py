@@ -164,16 +164,21 @@ def fourierNspalt(xArray,yArray,a,wl,n,d,zs):
 	#beim Integrieren bzw bei der fft schief geht.
 	subArrayX= []
 	subArrayY= []
-	for x in xArray:
+	print(xArray[0][1])
+	for x in xArray[0]:
 		subArrayX.append((float(fourierNspaltIntegrate(x,a,wl,n,d,zs))))
-	for y in yArray:
-		subArrayX.append((float(fourierNspaltIntegrate(y,a,wl,n,d,zs))))
+	for y in yArray[0]:
+		subArrayY.append((float(fourierNspaltIntegrate(y,a,wl,n,d,zs))))
 		
 	
-	Z = (subArrayX,subArrayY)
-
-	print(Z)
-	return Z
+	#Z = (subArrayX,subArrayY)
+	#print(subArrayX)
+	Ztmp = np.array([subArrayX,subArrayY])
+	print(Ztmp.ndim)
+	#Z = np.array([])
+	#np.append(Z,Ztmp)
+	#print(Z)
+	return Ztmp
 
 def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	# Fouriertransformierte von Transmission_Einzelspalt
@@ -204,7 +209,6 @@ def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	#scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
 	#matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
 	integral =  scipy.real(np.square(n * np.multiply(integral,r)))
-		
 	return integral
 
 ####__________________________________________________________________
@@ -306,8 +310,14 @@ def spalt3d(n,a,d,h,wl,zs):
 	x1  = np.arange(-3., 3., 0.005)
 	y1  = np.arange(-3., 3., 0.005)
 	X,Y = np.meshgrid(x1, y1, sparse=True)
-	Z   = fourierNspalt(X[0],Y[0],a,wl,n,d,zs)
-	h = plt.contourf(X,Y,Z)	#plt.subplot(212)
+	Z   = fourierNspalt(X,Y,a,wl,n,d,zs)
+
+	#print('X')
+	#print(X)
+	#print()
+	#print('Z')
+	#print(Z)
+	h = plt.contour(X,Y,Z)	#plt.subplot(212)
 	#plt.plot(x2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
 	plt.show()
 
