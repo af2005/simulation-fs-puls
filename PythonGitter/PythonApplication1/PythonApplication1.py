@@ -174,11 +174,10 @@ def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
 	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
 	# für den Doppelspalt bzw. n-Spalt haben wir also
-	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
 	u = k(wl)*sin(arctan(x/zs))
-
-	vorfaktor = 1
-	f = lambda y:  vorfaktor * Transmission_Einzelspalt(y,a) *exp(-i()*k(wl)*sin(arctan(x/zs))*y) 
+	vorfaktor = n**(1/2)
+	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
+	f = lambda y:  vorfaktor * Transmission_Einzelspalt(y,a) *exp(-i()*u*y) 
 	r = 0
 	#Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
 	#Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
@@ -188,12 +187,12 @@ def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	#Spalte einzubauen.
 	
 	mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
+	#print(mittelpunkteDerLoecher)
 	for pkt in mittelpunkteDerLoecher:
 		r = r + (exp(i()*u*pkt))
 	
 	if(n==1):
 		r = 1
-	
 	integral = complex_int(f,-a/2,a/2) 
 	#scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
 	#matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
@@ -221,7 +220,7 @@ def Transmission_Lochblende(rho,R):
 def Transmission_Mittelpunkte(n,d):
 	mittelpunkte = []
 	i = 1
-	if not(n%2):
+	if (n%2) == 1:
 		mittelpunkte.append(0)
 
 	while i<=n/2:
