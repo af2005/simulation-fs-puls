@@ -163,19 +163,18 @@ def fourierNspalt(xArray,a,wl,n,d,zs):
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
 	output = []
-	for value in xArray:
-		output.append(fourierNspaltIntegrate(value,a,wl,n,d,zs))
+	for x in xArray:
+		output.append(fourierNspaltIntegrate(x,a,wl,n,d,zs))
 	return output
 
-def fourierNspaltIntegrate(X,a,wl,n,d,zs):
+def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	# Fouriertransformierte von Transmission_Einzelspalt
 	# Siehe Glg 29 im Theory doc.pdf
 	# https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
 	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
 	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
-	# für den Doppelspalt bzw. n-Spalt haben wir also 
-	alphax = arctan(X/zs)
-	u = k(wl)*sin(alphax)
+	# für den Doppelspalt bzw. n-Spalt haben wir also
+	u = k(wl)*sin(arctan(x/zs))
 	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
 	vorfaktor = 1
 	f = lambda x:  vorfaktor * Transmission_Einzelspalt(x,a) *exp(-i()*u*x) 
@@ -297,14 +296,15 @@ def spalt(n,a,d,h,wl,zs):
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
 	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	t1 = np.arange(-3., 3., 0.005)
+	t1 = np.arange(-1., 1., 0.005)
 	t2 = t1
 	plt.figure(1)
-	plt.subplot(211)
+	#plt.subplot(311)
 	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
-	plt.plot(t1,fourierNspalt(arcsin(t1/zs),a,wl,n,d,zs) , 'r-')
-	plt.subplot(212)
-	plt.plot(t2,interferenz_Nspalt_manuell(arcsin(t2/zs),a,d,wl,zs,n),'b.')
+	#(xArray,a,wl,n,d,zs)
+	plt.plot(t1,fourierNspalt(t1,a,wl,n,d,zs) , 'r-')
+	#plt.subplot(212)
+	plt.plot(t2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
 	plt.show()
 
 		
