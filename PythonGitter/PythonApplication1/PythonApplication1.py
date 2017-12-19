@@ -255,7 +255,7 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 		arrayX=[]
 		for intx in np.arange(-1e-3, 1e-3, 1000):
 			arrayX.append(Transmission_n_Spalte(intx,2,a,d))
-		plt.plot(t1,np.array(arrayX), 'r--')
+		plt.plot(np.arange(-1e-3, 1e-3, 1000),np.array(arrayX), 'r--')
 		##change end
 		
 		plt.subplot(212)
