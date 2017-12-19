@@ -31,7 +31,7 @@ import argparse
 def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
 	parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=1)
-	parser.add_argument('--spalte', dest='n', help='Die Anzahl der Spalte. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
+	parser.add_argument('--n', dest='n', help='Die Anzahl der Spalte. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
 	parser.add_argument('--gitterkonst', dest='a', help='Gitterkonstante/Spaltbreite in um',default=3)
 	parser.add_argument('--wellenlaenge', dest='wl',help='Wellenlänge in nm',default=800 )
 	parser.add_argument('--schirmabstand', dest='zs', help='Schirmabstand in cm',default=350)
@@ -190,7 +190,7 @@ def Transmission_n_Spalte(x,n,a,d):
 	gesamttransmission = 0
 	i = 1
 
-	if n==1:
+	if n%2==1:
 		gesamttransmission = Transmission_Einzelspalt(x,a)
 		
 	while i<=n/2:
@@ -254,7 +254,7 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 		##change
 		arrayX=[]
 		for intx in np.arange(-0.0015, 0.0015, 0.000005):
-			arrayX.append(Transmission_n_Spalte(intx,2,a,d))
+			arrayX.append(Transmission_n_Spalte(intx,n,a,d))
 		plt.plot(np.arange(-0.0015, 0.0015, 0.000005),np.array(arrayX), 'r--')
 		plt.xlim(-0.0015, 0.0015)
 		plt.ylim(-1,2)
