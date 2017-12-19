@@ -171,6 +171,7 @@ def Transmission_Einzelspalt(x,a):
 	else:
 		return 0
 
+	
 def Transmission_Lochblende(rho,R):
 	#einzelnes Loch mit Radius R
 	#Verwende Polarkoordinaten rho,theta 
@@ -193,10 +194,12 @@ def Transmission_n_Spalte(x,n,a,d):
 		gesamttransmission = Transmission_Einzelspalt(x,a)
 		
 	while i<=n/2:
-		if (n % 2) == 0:
-			gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
+		if n%2==0:
+			gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a)
+			gesamttransmission += Transmission_Einzelspalt(x+d*(2*i-1)/2,a)
 		else:
-			gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
+			gesamttransmission += Transmission_Einzelspalt(x-d*i,a)
+			gesamttransmission += Transmission_Einzelspalt(x+d*i,a)
 		i =i+1
 	
 	
@@ -251,7 +254,7 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 		##change
 		arrayX=[]
 		for intx in arcsin(t1/zs):
-			arrayX.append(Transmission_n_Spalte(x,2,a,d))
+			arrayX.append(Transmission_n_Spalte(intx,2,a,d))
 		plt.plot(t1,np.array(arrayX), 'r--')
 		##change end
 		
