@@ -66,7 +66,7 @@ def main():
 	wl = args.wl * 1e-9
 	zs = args.zs * 1e-2
 	a  = args.a  * 1e-6
-	n  = args.n
+	n  = int(args.n)
 	d  = args.d  * 1e-3
 	h  = args.h  * 1e-3
 
@@ -244,29 +244,25 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
 	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	if (n==1):
-		t1 = np.arange(-3., 3., 0.1)
-		t2 = t1
-		plt.figure(1)
-		plt.subplot(211)
-		#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,d) , 'r--')
-		
-		##change
-		arrayX=[]
-		for intx in np.arange(-0.0015, 0.0015, 0.000005):
-			arrayX.append(Transmission_n_Spalte(intx,n,a,d))
-		plt.plot(np.arange(-0.0015, 0.0015, 0.000005),np.array(arrayX), 'r--')
-		plt.xlim(-0.0015, 0.0015)
-		plt.ylim(-1,2)
-		##change end
-		
-		plt.subplot(212)
-		plt.plot(t2,interferenz_einzelspalt_manuell(t2,0,a,wl,zs),'b--')
-		plt.show()
-	elif (n==2):
-		print('')
-
-		
+	t1 = np.arange(-3., 3., 0.1)
+	t2 = t1
+	plt.figure(1)
+	plt.subplot(211)
+	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,d) , 'r--')
+	
+	##change
+	arrayX=[]
+	for intx in np.arange(-0.0015, 0.0015, 0.000005):
+		arrayX.append(Transmission_n_Spalte(intx,n,a,d))
+	plt.plot(np.arange(-0.0015, 0.0015, 0.000005),np.array(arrayX), 'r--')
+	plt.xlim(-0.0015, 0.0015)
+	plt.ylim(-1,2)
+	##change end
+	
+	plt.subplot(212)
+	plt.plot(t2,interferenz_einzelspalt_manuell(t2,0,a,wl,zs),'b--')
+	plt.show()
+			
 
 def gitter(a,wl,zs):
 	print('nothing here')	
