@@ -206,7 +206,10 @@ def Transmission_n_Spalte(x,a,n,d):
 	# für den Doppelspalt bzw. n-Spalt haben wir also 
 	gesamttransmission = 0.
 	i = 1
-
+	
+	if n==1:
+		gesamttransmission = Transmission_Einzelspalt(x,a)
+	
 	while i<=n/2:
 		if (n % 2) == 0:
 			gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
@@ -214,8 +217,6 @@ def Transmission_n_Spalte(x,a,n,d):
 			gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
 		i =i+1
 	
-	if n==1:
-		gesamttransmission = Transmission_Einzelspalt(x,a)
 	
 	return gesamttransmission
 
