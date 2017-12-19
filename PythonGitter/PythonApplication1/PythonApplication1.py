@@ -154,9 +154,12 @@ def fourierNspalt(xArray,a,wl,n,d):
 def fourierNspaltIntegrate(alphax,a,wl,n,d):
 	u = k(wl)*math.sin(alphax)
 	#print(u)
-	f = lambda x: Transmission_Einzelspalt(x,a) *exp(-i()*u*x) * (exp(i()*u*d/2) + exp(-i()*u*d/2))
+	f = lambda x: Transmission_Einzelspalt(x,a) *exp(-i()*u*x) 
+	r = 1
+	mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
+	for pkt in mittelpunkteDerLoecher:
+		r += (exp(i()*u*pkt))
 
-	r = 1#(1/(2*pi)**0.5)
 	integral = integrate.quad(f,-a/2,a/2) 
 	integral =  np.square(np.multiply(integral,r))
 		
@@ -179,6 +182,23 @@ def Transmission_Lochblende(rho,R):
 		return 1
 	else: 
 		return 0
+def Transmission_Mittelpunkte(n,d):
+	mittelpunkte = []
+	i = 1
+	if not(n%2):
+		mittelpunkte.append(0)
+
+	while i<=n/2:
+		if (n % 2) == 0:
+			mittelpunkte.append(d*(2*i-1)/2)
+			mittelpunkte.append(-d*(2*i-1)/2)
+		else:
+			mittelpunkte.append((i)*d)
+			mittelpunkte.append(-(i)*d)
+	
+		i =i+1
+	
+	return mittelpunkte
 
 def Transmission_n_Spalte(x,a,n,d):
 	# Fouriertransformierte von Transmission_Einzelspalt
