@@ -175,9 +175,8 @@ def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
 	# für den Doppelspalt bzw. n-Spalt haben wir also
 	u = k(wl)*sin(arctan(x/zs))
-	vorfaktor = n**(1/2)
 	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-	f = lambda y:  vorfaktor * Transmission_Einzelspalt(y,a) *exp(-i()*u*y) 
+	f = lambda y:  Transmission_Einzelspalt(y,a) *exp(-i()*u*y) 
 	r = 0
 	#Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
 	#Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
@@ -196,7 +195,7 @@ def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	integral = complex_int(f,-a/2,a/2) 
 	#scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
 	#matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
-	integral =  scipy.real(np.square(vorfaktor * np.multiply(integral,r)))
+	integral =  scipy.real(np.square(n * np.multiply(integral,r)))
 		
 	return integral
 
@@ -299,11 +298,11 @@ def spalt(n,a,d,h,wl,zs):
 	t1 = np.arange(-3., 3., 0.005)
 	t2 = t1
 	plt.figure(1)
-	#plt.subplot(311)
+	plt.subplot(211)
 	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
 	#(xArray,a,wl,n,d,zs)
 	plt.plot(t1,fourierNspalt(t1,a,wl,n,d,zs) , 'r-')
-	#plt.subplot(212)
+	plt.subplot(212)
 	plt.plot(t2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
 	plt.show()
 
