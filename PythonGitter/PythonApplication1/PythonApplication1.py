@@ -22,7 +22,9 @@ from numpy import pi as pi
 
 import csv
 import pandas as pd
-import scipy.integrate as integrate
+import scipy
+from scipy import integrate as integrate
+
 
 import matplotlib.pyplot as plt
 import argparse
@@ -141,7 +143,22 @@ def dirac(x,mu):
 	#ich weiß noch nicht wie es am besten ist hier dran zu gehen. 
 	#Das hier ist eine gängige Approximation für mu->infinity
 	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
-	 
+
+#sollte keinen Unterschied fuer uns machen, da das Ergebnis immer real ist (zumindest fuer n Spalte)
+def complex_int(func, a, b, **kwargs):
+	def real_func(x):
+		return scipy.real(func(x))
+	def imag_func(x):
+		return scipy.imag(func(x))
+	real_integral = integrate.quad(real_func, a, b, **kwargs)
+	imag_integral = integrate.quad(imag_func, a, b, **kwargs)
+	return (real_integral[0] + i()*imag_integral[0])
+
+
+####__________________________________________________________________
+#### Berechnungsfunktionen mittels Fouriertransformation 
+####__________________________________________________________________ 
+
 def fourierNspalt(xArray,a,wl,n,d):
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
@@ -173,7 +190,7 @@ def fourierNspaltIntegrate(alphax,a,wl,n,d):
 
 	if(n==1):
 		r = 1
-	integral = integrate.quad(f,-a/2,a/2) 
+	integral = complex_int(f,-a/2,a/2) 
 	integral =  np.square(np.multiply(integral,r))
 		
 	return integral
@@ -251,9 +268,20 @@ def interferenz_doppelspalt_manuell(X,a,d,wl,zs):
 	#Formel 8 folgend
 	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
 	return np.square((cos(u*d/2) * ( (sin(a*u/2)) / (a*u/2))))
-
+ 
+def interferenz_Nspalt_manuell(X,a,d,wl,zs,N):
+	alphax = arctan(X/zs)
+	#alphay = arctan(Y/zs)
+	return ((N*sin(pi*N*d/wl*sin(alphax))/(sin(pi*a/wl*sin(alphax))) * a * sin(pi*a/wl*sin(alphax))/(pi*a/wl*sin(alphax)))**2)
 	
-		
+def interferenz_doppelspalt_manuell2(X,a,d,wl,zs): 
+	n=2
+	alphax = arctan(X/zs)
+	#alphay = arctan(Y/zs)
+	u = k(wl)*sin(alphax)
+	#Formel 8 folgend
+	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
+	return((cos(u*d/2)*sin(a*u/2)/(a*u/2))**2)	
 ####__________________________________________________________________
 #### Hauptfunktionen für n Spalte, Gitter, Gitter mit Fehlstelle etc..
 #### Aufzurufen aus der main()
@@ -270,14 +298,16 @@ def spalt(n,a,d,h,wl,zs):
 	t1 = np.arange(-3., 3., 0.01)
 	t2 = t1
 	plt.figure(1)
-	plt.subplot(211)
+	plt.subplot(311)
 	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
 	plt.plot(t1,fourierNspalt(arcsin(t1/zs),a,wl,n,d) , 'r-')
-	plt.subplot(212)
+	plt.subplot(312)
 	if (n == 1):
 		plt.plot(t2,interferenz_einzelspalt_manuell(t2,a,wl,zs),'b-')
 	elif (n==2):
 		plt.plot(t2,interferenz_doppelspalt_manuell(t2,a,d,wl,zs),'b-')
+	plt.subplot(313)
+	plt.plot(t2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b-')
 	plt.show()
 
 		
