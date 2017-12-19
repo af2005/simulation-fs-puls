@@ -165,9 +165,9 @@ def fourierNspalt(xArray,yArray,a,wl,n,d,zs):
 	subArrayX= []
 	subArrayY= []
 	for x in xArray:
-		subArrayX.append((float(fourierNspaltIntegrate(x,a,wl,n,d,zs)),float(fourierNspaltIntegrate(x,a,wl,n,d,zs))))
+		subArrayX.append((float(fourierNspaltIntegrate(x,a,wl,n,d,zs))))
 	for y in yArray:
-		subArrayX.append((float(fourierNspaltIntegrate(y,a,wl,n,d,zs)),float(fourierNspaltIntegrate(y,a,wl,n,d,zs))))
+		subArrayX.append((float(fourierNspaltIntegrate(y,a,wl,n,d,zs))))
 		
 	
 	Z = (subArrayX,subArrayY)
