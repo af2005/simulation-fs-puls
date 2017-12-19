@@ -70,9 +70,6 @@ def main():
 	d  = args.d  * 1e-3
 	h  = args.h  * 1e-3
 
-	lowerrange = -(a/2) 
-	upperrange = +(a/2)
-	print(lowerrange)
 
 	#__________________________________________________________________
 	# Mehrere Gitter / Wellenlängen Überlagerung
