@@ -248,15 +248,15 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 	t2 = t1
 	plt.figure(1)
 	plt.subplot(211)
-	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,d) , 'r--')
+	plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,d) , 'r--')
 	
 	##change
-	arrayX=[]
-	for intx in np.arange(-0.0015, 0.0015, 0.000005):
-		arrayX.append(Transmission_n_Spalte(intx,n,a,d))
-	plt.plot(np.arange(-0.0015, 0.0015, 0.000005),np.array(arrayX), 'r--')
-	plt.xlim(-0.0015, 0.0015)
-	plt.ylim(-1,2)
+	#arrayX=[]
+	#for intx in np.arange(-0.0015, 0.0015, 0.000005):
+	#	arrayX.append(Transmission_n_Spalte(intx,n,a,d))
+	#plt.plot(np.arange(-0.0015, 0.0015, 0.000005),np.array(arrayX), 'r--')
+	#plt.xlim(-0.0015, 0.0015)
+	#plt.ylim(-1,2)
 	##change end
 	
 	plt.subplot(212)
