@@ -32,10 +32,10 @@ def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
 	parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=1)
 	parser.add_argument('--n', dest='n', help='Die Anzahl der Spalte. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
-	parser.add_argument('--gitterkonst', dest='a', help='Gitterkonstante/Spaltbreite in um',default=3)
+	parser.add_argument('--gitterkonst', dest='a', help='Spaltbreite in um',default=80)
 	parser.add_argument('--wellenlaenge', dest='wl',help='Wellenlänge in nm',default=800 )
 	parser.add_argument('--schirmabstand', dest='zs', help='Schirmabstand in cm',default=350)
-	parser.add_argument('--spaltbreite', dest='d', help='Spaltbreite in mm',default=1)
+	parser.add_argument('--spaltbreite', dest='d', help='Gitterkonstante in mm',default=1)
 	parser.add_argument('--spalthoehe', dest='h', help='Spalthoehe in mm',default=20)
 
 
