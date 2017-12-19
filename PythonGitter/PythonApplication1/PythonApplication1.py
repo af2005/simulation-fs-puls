@@ -159,13 +159,21 @@ def complex_int(func, a, b, **kwargs):
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
 
-def fourierNspalt(xArray,a,wl,n,d,zs):
+def fourierNspalt(xArray,yArray,a,wl,n,d,zs):
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
-	output = []
+	subArrayX= []
+	subArrayY= []
 	for x in xArray:
-		output.append(fourierNspaltIntegrate(x,a,wl,n,d,zs))
-	return output
+		subArrayX.append((float(fourierNspaltIntegrate(x,a,wl,n,d,zs)),float(fourierNspaltIntegrate(x,a,wl,n,d,zs))))
+	for y in yArray:
+		subArrayX.append((float(fourierNspaltIntegrate(y,a,wl,n,d,zs)),float(fourierNspaltIntegrate(y,a,wl,n,d,zs))))
+		
+	
+	Z = (subArrayX,subArrayY)
+
+	print(Z)
+	return Z
 
 def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	# Fouriertransformierte von Transmission_Einzelspalt
@@ -295,20 +303,31 @@ def spalt3d(n,a,d,h,wl,zs):
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
 	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	x1 = np.linspace(-3., 3., 0.005)
-	x2 = x1
-	y1 = np.linspace(-3., 3., 0.005)
-	y2 = y1
-	xv, yv = np.meshgrid(x1, y1)
-	plt.figure(1)
-	#plt.subplot(211)
-	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
-	#(xArray,a,wl,n,d,zs)
-	plt.plot(x1,fourierNspalt(t1,a,wl,n,d,zs) , 'r-')
-	#plt.subplot(212)
+	x1  = np.arange(-3., 3., 0.005)
+	y1  = np.arange(-3., 3., 0.005)
+	X,Y = np.meshgrid(x1, y1, sparse=True)
+	Z   = fourierNspalt(X[0],Y[0],a,wl,n,d,zs)
+	h = plt.contourf(X,Y,Z)	#plt.subplot(212)
 	#plt.plot(x2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
 	plt.show()
 
+'''
+if (n==1):
+		x_1 = np.linspace(-3, 3, 300)
+		y_1 = np.linspace(-3, 3, 300)
+		X,Y = np.meshgrid(x_1,y_1)
+		Z = interferenz_einzelspalt(X,Y,a,wl,zs).T
+		A = interferenz_einzelspalt_fft_1d(X,Y,a,wl,zs).T #Mit fft erstellt
+		fig, ax = plt.subplots(nrows=2, ncols=1)
+		#auf einem anderen Colourmesh wie gray sieht man nur das erste Maximum.
+		plt.subplot(2, 1, 1)
+		plt.pcolormesh(Y,X, Z,cmap=plt.get_cmap("pink"))
+		#plt.gca().set_aspect("equal") # x- und y-Skala im gleichen Maßstaab
+		plt.subplot(2, 1, 2)
+		plt.pcolormesh(Y,X, A,cmap=plt.get_cmap("green"))
+		plt.show()
+	elif (n==2):
+'''
 def spalt2d(n,a,d,h,wl,zs):
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
