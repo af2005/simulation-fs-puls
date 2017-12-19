@@ -107,7 +107,7 @@ def main():
 
 	#__________________________________________________________________
 	# Schauen welche Funktion man ausführen muss spalt, gitter, gitterMitFehlstellen... 
-	spalt(n,a,d,h,wl,zs)
+	spalt3d(n,a,d,h,wl,zs)
 
 
 	#__________________________________________________________________
@@ -290,7 +290,26 @@ def interferenz_doppelspalt_manuell2(X,a,d,wl,zs):
 
 
 
-def spalt(n,a,d,h,wl,zs):
+def spalt3d(n,a,d,h,wl,zs):
+	# n  : Anzahl der Spalte
+	# a  : Größe der Spalte
+	# d  : Abstand (egal für Einzelspalt)
+	# h  : Hoehe des Spaltes (überlicherweise unendlich)
+	x1 = np.linspace(-3., 3., 0.005)
+	x2 = x1
+	y1 = np.linspace(-3., 3., 0.005)
+	y2 = y1
+	xv, yv = np.meshgrid(x1, y1)
+	plt.figure(1)
+	#plt.subplot(211)
+	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
+	#(xArray,a,wl,n,d,zs)
+	plt.plot(x1,fourierNspalt(t1,a,wl,n,d,zs) , 'r-')
+	#plt.subplot(212)
+	#plt.plot(x2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
+	plt.show()
+
+def spalt2d(n,a,d,h,wl,zs):
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
@@ -305,7 +324,6 @@ def spalt(n,a,d,h,wl,zs):
 	plt.subplot(212)
 	plt.plot(t2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
 	plt.show()
-
 		
 
 def gitter(a,wl,zs):
