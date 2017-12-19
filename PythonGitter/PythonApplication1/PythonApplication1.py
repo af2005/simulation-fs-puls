@@ -144,16 +144,16 @@ def dirac(x,mu):
 	#Das hier ist eine gängige Approximation für mu->infinity
 	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
 	 
-def fourierEinzelspalt(xArray,a,wl,lowerrange,upperrange,d):
+def fourierEinzelspalt(xArray,n,a,wl,lowerrange,upperrange,d):
 	output = []
 	for value in xArray:
-		output.append(fourierEinzelspaltIntegrate(value,a,wl,lowerrange,upperrange,d))
+		output.append(fourierEinzelspaltIntegrate(value,n,a,wl,lowerrange,upperrange,d))
 	return output
 
-def fourierEinzelspaltIntegrate(alphax,a,wl,lowerrange,upperrange,d):
+def fourierEinzelspaltIntegrate(alphax,n,a,wl,lowerrange,upperrange,d):
 	u = k(wl)*math.sin(alphax)
 	#print(u)
-	f = lambda x: Transmission_n_Spalte(x,2,a,d) *exp(-i()*u*x)
+	f = lambda x: Transmission_n_Spalte(x,n,a,d) *exp(-i()*u*x)
 	r = 1#(1/(2*pi)**0.5)
 	integral =  np.square(np.multiply(integrate.quad(f,lowerrange,upperrange),r))
 		
@@ -248,7 +248,7 @@ def spalt(n,a,d,h,wl,zs,lowerrange,upperrange):
 	t2 = t1
 	plt.figure(1)
 	plt.subplot(211)
-	plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange,d) , 'r--')
+	plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),n,a,wl,lowerrange,upperrange,d) , 'r--')
 	
 	##change
 	#arrayX=[]
