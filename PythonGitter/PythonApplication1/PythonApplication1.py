@@ -35,7 +35,7 @@ def main():
 	parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=1)
 	parser.add_argument('--n', dest='n', help='Die Anzahl der Spalte. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
 	parser.add_argument('--a', dest='a', help='Spaltbreite in um',default=3)
-	parser.add_argument('--spalthoehe', dest='h', help='Spalthoehe in mm',default=20)
+	parser.add_argument('--spalthoehe', dest='h', help='Spalthoehe in mm',default=3)
 	parser.add_argument('--wellenlaenge', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--schirmabstand', dest='zs', help='Schirmabstand in cm',default=350)
 	parser.add_argument('--spaltabstand', dest='d', help='Spaltabstand in mm',default=0.01)
@@ -68,9 +68,9 @@ def main():
 	wl = args.wl * 1e-9
 	zs = args.zs * 1e-2
 	a  = args.a  * 1e-6
+	h  = args.h  * 1e-6
 	n  = int(args.n)
 	d  = args.d  * 1e-3
-	h  = args.h  * 1e-3
 
 
 	#__________________________________________________________________
