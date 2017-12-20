@@ -35,7 +35,7 @@ def main():
 	parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=1)
 	parser.add_argument('--n', dest='n', help='Die Anzahl der Spalte. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
 	parser.add_argument('--a', dest='a', help='Spaltbreite in um',default=3)
-	parser.add_argument('--spalthoehe', dest='h', help='Spalthoehe in mm',default=3)
+	parser.add_argument('--h', dest='h', help='Spalthoehe in mm',default=3)
 	parser.add_argument('--wellenlaenge', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--schirmabstand', dest='zs', help='Schirmabstand in cm',default=350)
 	parser.add_argument('--spaltabstand', dest='d', help='Spaltabstand in mm',default=0.01)
@@ -67,8 +67,8 @@ def main():
 	# Variablen auf SI Einheiten bringen. 
 	wl = args.wl * 1e-9
 	zs = args.zs * 1e-2
-	a  = args.a  * 1e-6
-	h  = args.h  * 1e-6
+	a  = int(args.a)  * 1e-6
+	h  = int(args.h)  * 1e-6
 	n  = int(args.n)
 	d  = args.d  * 1e-3
 
@@ -160,25 +160,25 @@ def complex_int(func, a, b, **kwargs):
 ####__________________________________________________________________ 
 
 def fourierNspalt(xArray,yArray,a,h,wl,n,d,zs):
-    #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
-    #beim Integrieren bzw bei der fft schief geht.
-    subArrayX= []
-    subArrayY= []
-    
-    for x in xArray[0]:
-        subArrayX.append((float(fourierNspaltIntegrate(x,a,wl,n,d,zs))))
-    for y in yArray[:,0]:
-        subArrayY.append((float(fourierNspaltIntegrate(y,h,wl,n,d,zs))))
+	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
+	#beim Integrieren bzw bei der fft schief geht.
+	subArrayX= []
+	subArrayY= []
+	
+	for x in xArray[0]:
+		subArrayX.append((float(fourierNspaltIntegrate(x,a,wl,n,d,zs))))
+	for y in yArray[:,0]:
+		subArrayY.append((float(fourierNspaltIntegrate(y,h,wl,n,d,zs))))
 
 
-    #Z = (subArrayX,subArrayY)
-    #print(subArrayX)
-    XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
-    Ztmp=XX*YY
-    #Z = np.array([])
-    #np.append(Z,Ztmp)
-    #print(Z)
-    return Ztmp
+	#Z = (subArrayX,subArrayY)
+	#print(subArrayX)
+	XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
+	Ztmp=XX*YY
+	#Z = np.array([])
+	#np.append(Z,Ztmp)
+	#print(Z)
+	return Ztmp
 
 def fourierNspaltIntegrate(x,a,wl,n,d,zs):
 	# Fouriertransformierte von Transmission_Einzelspalt
@@ -303,17 +303,19 @@ def interferenz_doppelspalt_manuell2(X,a,d,wl,zs):
 
 
 def spalt3d(n,a,d,h,wl,zs):
-    # n  : Anzahl der Spalte
-    # a  : Größe der Spalte
-    # d  : Abstand (egal für Einzelspalt)
-    # h  : Hoehe des Spaltes (überlicherweise unendlich)
-    x1  = np.arange(-3., 3., 0.005)
-    y1  = np.arange(-3., 3., 0.005)
-    X,Y = np.meshgrid(x1, y1)
-    Z = fourierNspalt(X,Y,a,h,wl,n,d,zs)
+	# n  : Anzahl der Spalte
+	# a  : Größe der Spalte
+	# d  : Abstand (egal für Einzelspalt)
+	# h  : Hoehe des Spaltes (überlicherweise unendlich)
+	x1  = np.arange(-5., 5., 0.005)
+	y1  = np.arange(-5., 5., 0.005)
+	X,Y = np.meshgrid(x1, y1)
+	Z = fourierNspalt(X,Y,a,h,wl,n,d,zs)
 
-    h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
-    plt.show()
+	#h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
+	plt.pcolormesh(Y,X, Z,cmap=plt.get_cmap("pink"))
+
+	plt.show()
 
 '''
 if (n==1):
