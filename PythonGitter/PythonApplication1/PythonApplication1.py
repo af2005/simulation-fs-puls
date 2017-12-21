@@ -32,9 +32,12 @@ import argparse
 #main() wird automatisch aufgerufen
 def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
-	parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=2)
-	parser.add_argument('--Spalte in x-Richtung', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
-	parser.add_argument('--Spalte in y-Richtung', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
+	#
+	# Für Spalte nur in 1 Richtung mit unendlicher Ausdehnung einfach nx/ny auf 0 setzen
+	#parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=2)
+	#
+	parser.add_argument('--Spalte in x-Richtung', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
+	parser.add_argument('--Spalte in y-Richtung', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
 	parser.add_argument('--Spaltbreite in x-Richtung', dest='ax', help='Spaltbreite in um',default=3)
 	parser.add_argument('--Spaltbreite in y-Richtung', dest='ay', help='Spalthoehe in um',default=5)
 	parser.add_argument('--Spaltabstand in x-Richtung', dest='dx', help='Spaltabstand in horizontaler Richtung in um',default=10)
@@ -58,8 +61,9 @@ def main():
 	print('------------------------------------------------------------------------------')
 	print('')
 	print('Es wurden folgende Parameter eingegeben oder angenommen'                           )
-	print('   Dimension                                  :  ' + str(args.dimension))
-	print('   Falls Dimension = 1, berechnen wir für     :')
+	#print('   Dimension                                  :  ' + str(args.dimension))
+	#print('   Falls Dimension = 1, berechnen wir für     :')
+	print('   Anzahl der Spalte:')
 	print('      ' + str(args.nx) + ' Spalte in horizontaler Richtung(x)')
 	print('      ' + str(args.ny) + ' Spalte in vertikaler Richtung(y)')
 	print('   Spaltbreite in um          :')
@@ -119,8 +123,8 @@ def main():
 
 	#__________________________________________________________________
 	# Schauen welche Funktion man ausführen muss spalt, gitter, gitterMitFehlstellen... 
-	spalt3d(n,a,d,h,wl,zs)
-
+	#spaltPeriodisch3d(n,a,d,h,wl,zs)
+	spaltAnyFunction3d(n,a,d,h,wl,zs)
 
 	#__________________________________________________________________
 	# Ende der main()
@@ -171,16 +175,22 @@ def complex_int(func, a, b, **kwargs):
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
 
-def fourierNspalt(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  ##funktioniert
+def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  ##funktioniert
     #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
     #beim Integrieren bzw bei der fft schief geht.
     subArrayX= []
     subArrayY= []
     
     for x in xArray:
-        subArrayX.append((float(fourierNspaltIntegrate(x,nx,ax,dx,wl,zs))))
+		if nx==0:
+			subArrayX.append(1)
+		else:
+			subArrayX.append((float(fourierNspaltPeriodischIntegrate(x,nx,ax,dx,wl,zs))))
     for y in yArray:
-        subArrayY.append((float(fourierNspaltIntegrate(y,ny,ay,dy,wl,zs))))
+		if ny==0:
+			subArrayY.append(1)
+		else:
+			subArrayY.append((float(fourierNspaltPeriodischIntegrate(y,ny,ay,dy,wl,zs))))
         
     XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
     Ztmp=XX*YY
@@ -191,7 +201,7 @@ def fourierNspalt(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  ##funktioniert
 ## (still to be tested, work for normal grids)
 ## TBD: change discrete fourier transform to fft
 	
-def fourierNspaltWithWholeTransmissionFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs): ##gibt 1D richtiges Ergebnis
+def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs): ##gibt 1D richtiges Ergebnis
     ## bietet die Möglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
     ## beliebige Funktion für das Gitter einzusetzen
     
@@ -201,16 +211,22 @@ def fourierNspaltWithWholeTransmissionFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,w
     subArrayY= []
     
     for x in xArray:
-        subArrayX.append(float(fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)))
+		if nx==0:
+			subArrayX.append(1)
+		else:
+			subArrayX.append(float(fourierNspaltIntegrateAnyFunction(x,nx,ax,dx,wl,zs)))
     for y in yArray:
-        subArrayY.append(float(fourierNspaltIntegrateWithWholeTransmissionFunction(y,ny,ay,dy,wl,zs)))
+		if ny==0:
+			subArrayY.append(1)
+		else:
+			subArrayY.append(float(fourierNspaltIntegrateAnyFunction(y,ny,ay,dy,wl,zs)))
 
     XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
     Ztmp=XX*YY
     
     return Ztmp
 	
-def fourierNspaltIntegrateWithWholeTransmissionFunction(x,n,a,d,wl,zs):
+def fourierNspaltIntegrateAnyFunction(x,n,a,d,wl,zs):
     # Fouriertransformierte von Transmission_Gitter
     
     ## bietet die Möglichkeit eine beliebige Funktion für das Gitter in 'Transmission_n_Spalte(y,n,a,d)' einzusetzen
@@ -227,7 +243,7 @@ def fourierNspaltIntegrateWithWholeTransmissionFunction(x,n,a,d,wl,zs):
 	
 ## Ende der beiden Funktionen für die Integration über beliebige Gitterformen
 	
-def fourierNspaltIntegrate(x,n,a,d,wl,zs):
+def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
     # Fouriertransformierte von Transmission_Einzelspalt
     # Siehe Glg 29 im Theory doc.pdf
     # https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
@@ -349,7 +365,7 @@ def interferenz_doppelspalt_manuell2(X,a,d,wl,zs):
 
 
 
-def spalt3d(nx,ny,ax,ay,dx,dy,wl,zs):
+def spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs):
     # n  : Anzahl der Spalte
     # a  : Größe der Spalte
     # d  : Abstand (egal für Einzelspalt)
@@ -358,53 +374,62 @@ def spalt3d(nx,ny,ax,ay,dx,dy,wl,zs):
     y1  = np.arange(-3., 3., 0.005)
 
     X,Y = np.meshgrid(x1, y1)
-    Z = fourierNspaltWithWholeTransmissionFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-    #Z = fourierNspalt(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    Z = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 
     h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
     plt.show()
+	
+def spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,wl,zs):
+    # n  : Anzahl der Spalte
+    # a  : Größe der Spalte
+    # d  : Abstand (egal für Einzelspalt)
+    
+    x1  = np.arange(-3., 3., 0.005)
+    y1  = np.arange(-3., 3., 0.005)
 
-'''
-if (n==1):
-		x_1 = np.linspace(-3, 3, 300)
-		y_1 = np.linspace(-3, 3, 300)
-		X,Y = np.meshgrid(x_1,y_1)
-		Z = interferenz_einzelspalt(X,Y,a,wl,zs).T
-		A = interferenz_einzelspalt_fft_1d(X,Y,a,wl,zs).T #Mit fft erstellt
-		fig, ax = plt.subplots(nrows=2, ncols=1)
-		#auf einem anderen Colourmesh wie gray sieht man nur das erste Maximum.
-		plt.subplot(2, 1, 1)
-		plt.pcolormesh(Y,X, Z,cmap=plt.get_cmap("pink"))
-		#plt.gca().set_aspect("equal") # x- und y-Skala im gleichen Maßstaab
-		plt.subplot(2, 1, 2)
-		plt.pcolormesh(Y,X, A,cmap=plt.get_cmap("green"))
-		plt.show()
-	elif (n==2):
-'''
+    X,Y = np.meshgrid(x1, y1)
+    Z = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    
+    h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
+    plt.show()
 
-'''
-def spalt2d(n,a,d,h,wl,zs):
+def comparefft(nx,ny,ax,ay,dx,dy,wl,zs):
+    # n  : Anzahl der Spalte
+    # a  : Größe der Spalte
+    # d  : Abstand (egal für Einzelspalt)
+    
+    x1  = np.arange(-3., 3., 0.005)
+    y1  = np.arange(-3., 3., 0.005)
+    
+    X,Y = np.meshgrid(x1, y1)
 
-	## sollte durch die auf 3D veränderten Funktionen nicht mehr gehen.
-	## Sonst muss man die Returnvalues zurück auf subArrayX/subArrayY ändern.
-
-
-	# n  : Anzahl der Spalte
-	# a  : Größe der Spalte
-	# d  : Abstand (egal für Einzelspalt)
-	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	t1 = np.arange(-3., 3., 0.005)
-	t2 = t1
-	plt.figure(1)
-	plt.subplot(211)
-	#plt.plot(t1,fourierEinzelspalt(arcsin(t1/zs),a,wl,lowerrange,upperrange) , 'r--')
-	#(xArray,a,wl,n,d,zs)
-	plt.plot(t1,fourierNspalt(t1,a,wl,n,d,zs) , 'r-')
-	plt.subplot(212)
-	plt.plot(t2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
-	plt.show()
-'''	
-
+    z1 = fourierNspaltWithWholeTransmissionFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z2 = fourierNspalt(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    
+    X_man=[]
+    Y_man=[]
+    for x in x1:
+        X_man.append(interferenz_Nspalt_manuell(x,nx,ax,dx,wl,zs))
+    for y in y1:
+        Y_man.append(interferenz_Nspalt_manuell(y,ny,ay,dy,wl,zs))
+    
+    X_grid_man,Y_grid_man = np.meshgrid(X_man, Y_man)
+    
+    z3=X_grid_man*Y_grid_man
+    
+    fig, ax = plt.subplots(nrows=1, ncols=3)
+    
+    plt.subplot(1,3,1)
+    f = plt.contour(X,Y,z1,levels = np.linspace(np.min(z1), np.max(z1), 100))
+    
+    plt.subplot(1,3,2)
+    g = plt.contour(X,Y,z2,levels = np.linspace(np.min(z2), np.max(z2), 100))
+    
+    plt.subplot(1,3,3)
+    h = plt.contour(X,Y,z3,levels = np.linspace(np.min(z3), np.max(z3), 100))
+        
+    plt.show()
+	
 def gitter(a,wl,zs):
 	print('nothing here')	
 
