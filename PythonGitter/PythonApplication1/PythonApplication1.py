@@ -32,13 +32,16 @@ import argparse
 #main() wird automatisch aufgerufen
 def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
-	parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=1)
-	parser.add_argument('--n', dest='n', help='Die Anzahl der Spalte. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
-	parser.add_argument('--a', dest='a', help='Spaltbreite in um',default=3)
-	parser.add_argument('--h', dest='h', help='Spalthoehe in mm',default=3)
+	parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=2)
+	parser.add_argument('--Spalte in x-Richtung', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
+	parser.add_argument('--Spalte in y-Richtung', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 1 und Unendlich.',default=1)
+	parser.add_argument('--Spaltbreite in x-Richtung', dest='ax', help='Spaltbreite in um',default=3)
+	parser.add_argument('--Spaltbreite in y-Richtung', dest='ay', help='Spalthoehe in um',default=5)
+	parser.add_argument('--Spaltabstand in x-Richtung', dest='dx', help='Spaltabstand in horizontaler Richtung in um',default=10)
+	parser.add_argument('--Spaltabstand in y-Richtung', dest='dy', help='Spaltabstand in vertikaler Richtung in um',default=10)
 	parser.add_argument('--wellenlaenge', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--schirmabstand', dest='zs', help='Schirmabstand in cm',default=350)
-	parser.add_argument('--spaltabstand', dest='d', help='Spaltabstand in mm',default=0.01)
+	
 
 
 	args = parser.parse_args()
@@ -56,8 +59,15 @@ def main():
 	print('')
 	print('Es wurden folgende Parameter eingegeben oder angenommen'                           )
 	print('   Dimension                                  :  ' + str(args.dimension))
-	print('   Falls Dimension = 1, berechnen wir für     :  ' + str(args.n) + ' Spalte')
-	print("   Gitterkonstante/Spaltbreite in um          :  " + str(args.a))
+	print('   Falls Dimension = 1, berechnen wir für     :')
+	print('      ' + str(args.nx) + ' Spalte in horizontaler Richtung(x)')
+	print('      ' + str(args.ny) + ' Spalte in vertikaler Richtung(y)')
+	print('   Spaltbreite in um          :')
+	print('      horizontal(x):   ' + str(args.ax))
+	print('      vertikal(y):     ' + str(args.ay))
+	print('   Spaltabstand in um          :')
+	print('      horizontal(x):   ' + str(args.dx))
+	print('      vertikal(y):     ' + str(args.dy))
 	print("   Wellenlänge in  nm                         :  " + str(args.wl))
 	print("   Schirmabstand in cm                        :  " + str(args.zs))
 	print('')
@@ -65,13 +75,15 @@ def main():
 
 	#__________________________________________________________________
 	# Variablen auf SI Einheiten bringen. 
+	nx = int(args.nx)
+	ny = int(args.ny)
+	ax = args.ax  * 1e-6
+	ay = args.ay  * 1e-6
+	dx  = args.dx  * 1e-6
+	dy  = args.dy  * 1e-6
 	wl = args.wl * 1e-9
 	zs = args.zs * 1e-2
-	a  = int(args.a)  * 1e-6
-	h  = int(args.h)  * 1e-6
-	n  = int(args.n)
-	d  = args.d  * 1e-3
-
+	
 
 	#__________________________________________________________________
 	# Mehrere Gitter / Wellenlängen Überlagerung
@@ -159,113 +171,148 @@ def complex_int(func, a, b, **kwargs):
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
 
-def fourierNspalt(xArray,yArray,a,h,wl,n,d,zs):
-	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
-	#beim Integrieren bzw bei der fft schief geht.
-	subArrayX= []
-	subArrayY= []
-	
-	for x in xArray[0]:
-		subArrayX.append((float(fourierNspaltIntegrate(x,a,wl,n,d,zs))))
-	for y in yArray[:,0]:
-		subArrayY.append((float(fourierNspaltIntegrate(y,h,wl,n,d,zs))))
+def fourierNspalt(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  ##funktioniert
+    #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
+    #beim Integrieren bzw bei der fft schief geht.
+    subArrayX= []
+    subArrayY= []
+    
+    for x in xArray:
+        subArrayX.append((float(fourierNspaltIntegrate(x,nx,ax,dx,wl,zs))))
+    for y in yArray:
+        subArrayY.append((float(fourierNspaltIntegrate(y,ny,ay,dy,wl,zs))))
+        
+    XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
+    Ztmp=XX*YY
 
+    return Ztmp
 
-	#Z = (subArrayX,subArrayY)
-	#print(subArrayX)
-	XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
-	Ztmp=XX*YY
-	#Z = np.array([])
-	#np.append(Z,Ztmp)
-	#print(Z)
-	return Ztmp
+## neue Funktionen für die Integration über beliebige Gitterformen
+## (still to be tested, work for normal grids)
+## TBD: change discrete fourier transform to fft
+	
+def fourierNspaltWithWholeTransmissionFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs): ##gibt 1D richtiges Ergebnis
+    ## bietet die Möglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
+    ## beliebige Funktion für das Gitter einzusetzen
+    
+    #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
+    #beim Integrieren bzw bei der fft schief geht.
+    subArrayX= []
+    subArrayY= []
+    
+    for x in xArray:
+        subArrayX.append(float(fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)))
+    for y in yArray:
+        subArrayY.append(float(fourierNspaltIntegrateWithWholeTransmissionFunction(y,ny,ay,dy,wl,zs)))
 
-def fourierNspaltIntegrate(x,a,wl,n,d,zs):
-	# Fouriertransformierte von Transmission_Einzelspalt
-	# Siehe Glg 29 im Theory doc.pdf
-	# https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
-	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
-	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
-	# für den Doppelspalt bzw. n-Spalt haben wir also
-	u = k(wl)*sin(arctan(x/zs))
-	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-	f = lambda y:  Transmission_Einzelspalt(y,a) *exp(-i()*u*y) 
-	r = 0
-	#Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
-	#Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
-	#Fouriertransformation dieser Dirac funktion. Die Breite a dieser ganzen Spalte ist durch
-	#die Funktion f mit der Transmission eines Spaltes festgelegt.
-	#Hier ist also noch eine Verbesserung notwendig, die uns ermoeglicht unterschiedlich breite
-	#Spalte einzubauen.
+    XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
+    Ztmp=XX*YY
+    
+    return Ztmp
 	
-	mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
-	#print(mittelpunkteDerLoecher)
-	for pkt in mittelpunkteDerLoecher:
-		r = r + (exp(i()*u*pkt))
+def fourierNspaltIntegrateWithWholeTransmissionFunction(x,n,a,d,wl,zs):
+    # Fouriertransformierte von Transmission_Gitter
+    
+    ## bietet die Möglichkeit eine beliebige Funktion für das Gitter in 'Transmission_n_Spalte(y,n,a,d)' einzusetzen
+    
+    u = k(wl)*sin(arctan(x/zs))
+    #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
+    f = lambda y:  Transmission_n_Spalte(y,n,a,d)*exp(-i()*u*y) 
+
+    integral = complex_int(f,-(n-1)*d/2-a,(n-1)*d/2+a)
+    #scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
+    #matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
+    integral =  scipy.real(np.square(np.multiply(n,integral)))
+    return integral
 	
-	if(n==1):
-		r = 1
-	integral = complex_int(f,-a/2,a/2) 
-	#scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
-	#matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
-	integral =  scipy.real(np.square(n * np.multiply(integral,r)))
-	return integral
+## Ende der beiden Funktionen für die Integration über beliebige Gitterformen
+	
+def fourierNspaltIntegrate(x,n,a,d,wl,zs):
+    # Fouriertransformierte von Transmission_Einzelspalt
+    # Siehe Glg 29 im Theory doc.pdf
+    # https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
+    # ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
+    # außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
+    # für den Doppelspalt bzw. n-Spalt haben wir also
+    u = k(wl)*sin(arctan(x/zs))
+    #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
+    f = lambda y:  Transmission_Einzelspalt(y,a) *exp(-i()*u*y) 
+    r = 0
+    #Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
+    #Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
+    #Fouriertransformation dieser Dirac funktion. Die Breite a dieser ganzen Spalte ist durch
+    #die Funktion f mit der Transmission eines Spaltes festgelegt.
+    #Hier ist also noch eine Verbesserung notwendig, die uns ermoeglicht unterschiedlich breite
+    #Spalte einzubauen.
+
+    mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
+    #print(mittelpunkteDerLoecher)
+    for pkt in mittelpunkteDerLoecher:
+        r = r + (exp(i()*u*pkt))
+
+    if(n==1):
+        r = 1
+    integral = complex_int(f,-a,a)
+    #scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
+    #matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
+    integral =  scipy.real(np.square(n * np.multiply(integral,r)))
+    return integral
 
 ####__________________________________________________________________
 #### Transmissionsfunktion verschiedener Objekte
 ####__________________________________________________________________
 
 def Transmission_Einzelspalt(x,a):
-	if math.fabs(x) < a/2:
-		return 1
-	else:
-		return 0
+    if math.fabs(x) < a/2:
+        return 1
+    else:
+        return 0
 
 def Transmission_Lochblende(rho,R):
-	#einzelnes Loch mit Radius R
-	#Verwende Polarkoordinaten rho,theta 
-	if (rho < R):
-		return 1
-	else: 
-		return 0
+    #einzelnes Loch mit Radius R
+    #Verwende Polarkoordinaten rho,theta 
+    if (rho < R):
+        return 1
+    else: 
+        return 0
 def Transmission_Mittelpunkte(n,d):
-	mittelpunkte = []
-	i = 1
-	if (n%2) == 1:
-		mittelpunkte.append(0)
+    mittelpunkte = []
+    i = 1
+    if (n%2) == 1:
+        mittelpunkte.append(0)
 
-	while i<=n/2:
-		if (n % 2) == 0:
-			mittelpunkte.append(d*(2*i-1)/2)
-			mittelpunkte.append(-d*(2*i-1)/2)
-		else:
-			mittelpunkte.append((i)*d)
-			mittelpunkte.append(-(i)*d)
-	
-		i =i+1
-	
-	return mittelpunkte
+    while i<=n/2:
+        if (n % 2) == 0:
+            mittelpunkte.append(d*(2*i-1)/2)
+            mittelpunkte.append(-d*(2*i-1)/2)
+        else:
+            mittelpunkte.append((i)*d)
+            mittelpunkte.append(-(i)*d)
 
-def Transmission_n_Spalte(x,a,n,d):
+        i =i+1
 
-	gesamttransmission = 0.
-	i = 1
-	
-	if (n % 2) == 1:
-		gesamttransmission = Transmission_Einzelspalt(x,a)
-	
-	while i<=n/2:
-		if (n % 2) == 0:
-			gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
-		else:
-			gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
-		i =i+1
-	
-	
-	return gesamttransmission
+    return mittelpunkte
+
+def Transmission_n_Spalte(x,n,a,d):
+
+    gesamttransmission = 0.
+    i = 1
+
+    if (n % 2) == 1:
+        gesamttransmission = Transmission_Einzelspalt(x,a)
+
+    while i<=n/2:
+        if (n % 2) == 0:
+            gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
+        else:
+            gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
+        i =i+1
+
+
+    return gesamttransmission
 
 def Transmission_Gitter(x,y,n,a,d):
-	return Transmission_n_Spalte(x,n,a,d) * Transmission_n_Spalte(y,n,a,d)
+    return Transmission_n_Spalte(x,n,a,d) * Transmission_n_Spalte(y,n,a,d)
 
 ####__________________________________________________________________
 #### Intensitätsverteilungen für verschiedene Objekte. Ich weiß nicht ob
@@ -275,13 +322,13 @@ def Transmission_Gitter(x,y,n,a,d):
 
 def interferenz_einzelspalt_manuell(X,a,wl,zs):
 
-	alphax = arctan(X/zs)
-	return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
+    alphax = arctan(X/zs)
+    return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
 
-def interferenz_Nspalt_manuell(X,a,d,wl,zs,N):
-	alphax = arctan(X/zs)
-	#alphay = arctan(Y/zs)
-	return ((N*sin(pi*N*d/wl*sin(alphax))/(sin(pi*d/wl*sin(alphax))) * a * sinc(pi*a/wl*sin(alphax)))**2)
+def interferenz_Nspalt_manuell(X,n,a,d,wl,zs):
+    alphax = arctan(X/zs)
+    #alphay = arctan(Y/zs)
+    return ((n*sin(pi*n*d/wl*sin(alphax))/(sin(pi*d/wl*sin(alphax))) * a * sinc(pi*a/wl*sin(alphax)))**2)
 
 '''	
 #vermutlich Falsch! Max Intensitaet
@@ -302,20 +349,20 @@ def interferenz_doppelspalt_manuell2(X,a,d,wl,zs):
 
 
 
-def spalt3d(n,a,d,h,wl,zs):
-	# n  : Anzahl der Spalte
-	# a  : Größe der Spalte
-	# d  : Abstand (egal für Einzelspalt)
-	# h  : Hoehe des Spaltes (überlicherweise unendlich)
-	x1  = np.arange(-5., 5., 0.005)
-	y1  = np.arange(-5., 5., 0.005)
-	X,Y = np.meshgrid(x1, y1)
-	Z = fourierNspalt(X,Y,a,h,wl,n,d,zs)
+def spalt3d(nx,ny,ax,ay,dx,dy,wl,zs):
+    # n  : Anzahl der Spalte
+    # a  : Größe der Spalte
+    # d  : Abstand (egal für Einzelspalt)
+    
+    x1  = np.arange(-3., 3., 0.005)
+    y1  = np.arange(-3., 3., 0.005)
 
-	#h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
-	plt.pcolormesh(Y,X, Z,cmap=plt.get_cmap("pink"))
+    X,Y = np.meshgrid(x1, y1)
+    Z = fourierNspaltWithWholeTransmissionFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    #Z = fourierNspalt(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 
-	plt.show()
+    h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
+    plt.show()
 
 '''
 if (n==1):
@@ -334,7 +381,14 @@ if (n==1):
 		plt.show()
 	elif (n==2):
 '''
+
+'''
 def spalt2d(n,a,d,h,wl,zs):
+
+	## sollte durch die auf 3D veränderten Funktionen nicht mehr gehen.
+	## Sonst muss man die Returnvalues zurück auf subArrayX/subArrayY ändern.
+
+
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
@@ -349,7 +403,7 @@ def spalt2d(n,a,d,h,wl,zs):
 	plt.subplot(212)
 	plt.plot(t2,interferenz_Nspalt_manuell(t2,a,d,wl,zs,n),'b.')
 	plt.show()
-		
+'''	
 
 def gitter(a,wl,zs):
 	print('nothing here')	
