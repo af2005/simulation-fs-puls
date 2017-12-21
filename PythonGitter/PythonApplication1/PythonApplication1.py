@@ -29,6 +29,27 @@ from scipy import integrate as integrate
 import matplotlib.pyplot as plt
 import argparse
 
+## zur Darstellung der Intensität verwenden wir einen nicht-linearen Farbverlauf nach 
+## https://stackoverflow.com/questions/33873397/nonlinear-colormap-with-matplotlib
+class nlcmap(LinearSegmentedColormap):
+    """A nonlinear colormap"""
+
+    name = 'nlcmap'
+
+    def __init__(self, cmap, levels):
+        self.cmap = cmap
+        self.monochrome = self.cmap.monochrome
+        self.levels = np.asarray(levels, dtype='float64')
+        self._x = self.levels/ self.levels.max()
+        self.levmax = self.levels.max()
+        self.levmin = self.levels.min()
+        self._y = np.linspace(self.levmin, self.levmax, len(self.levels))
+
+    def __call__(self, xi, alpha=1.0, **kw):
+        yi = np.interp(xi, self._x, self._y)
+        return self.cmap(yi/self.levmax, alpha)
+
+
 #main() wird automatisch aufgerufen
 def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
@@ -42,6 +63,7 @@ def main():
 	parser.add_argument('--Spaltbreite in y-Richtung', dest='ay', help='Spalthoehe in um',default=5)
 	parser.add_argument('--Spaltabstand in x-Richtung', dest='dx', help='Spaltabstand in horizontaler Richtung in um',default=10)
 	parser.add_argument('--Spaltabstand in y-Richtung', dest='dy', help='Spaltabstand in vertikaler Richtung in um',default=10)
+	parser.add_argument('--Gitterfehler', dest='error', help='Gitterfehler in um, verschiebt momentan die Spaltmittelpunkte um diesen Wert in x- und y-Richtung von (0,0) weg',default=1)
 	parser.add_argument('--wellenlaenge', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--schirmabstand', dest='zs', help='Schirmabstand in cm',default=350)
 	
@@ -72,6 +94,7 @@ def main():
 	print('   Spaltabstand in um          :')
 	print('      horizontal(x):   ' + str(args.dx))
 	print('      vertikal(y):     ' + str(args.dy))
+	print('   Gitterfehler:       ' + str(args.error) + 'um Verschiebung aller Spalte in x- und y-Richtung vom Zentrum (0,0) weg')
 	print("   Wellenlänge in  nm                         :  " + str(args.wl))
 	print("   Schirmabstand in cm                        :  " + str(args.zs))
 	print('')
@@ -85,6 +108,7 @@ def main():
 	ay = args.ay  * 1e-6
 	dx  = args.dx  * 1e-6
 	dy  = args.dy  * 1e-6
+	error = args.error * 1e-6
 	wl = args.wl * 1e-9
 	zs = args.zs * 1e-2
 	
@@ -123,9 +147,12 @@ def main():
 
 	#__________________________________________________________________
 	# Schauen welche Funktion man ausführen muss spalt, gitter, gitterMitFehlstellen... 
-	#spaltPeriodisch3d(n,a,d,h,wl,zs)
-	spaltAnyFunction3d(n,a,d,h,wl,zs)
-
+	#comparefft(nx,ny,ax,ay,dx,dy,wl,zs)
+    #spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs)
+    #spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,error,wl,zs)
+    comparegriderrors(nx,ny,ax,ay,dx,dy,error,wl,zs) 	#vergleicht die Gitter/Beugungsmuster für Gitter mit und ohne Fehler
+	
+	
 	#__________________________________________________________________
 	# Ende der main()
 
@@ -175,6 +202,10 @@ def complex_int(func, a, b, **kwargs):
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
 
+####__________________________________________________________________
+#### Berechnungsfunktionen mittels Fouriertransformation 
+####__________________________________________________________________ 
+
 def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  ##funktioniert
     #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
     #beim Integrieren bzw bei der fft schief geht.
@@ -182,26 +213,23 @@ def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  ##funktioni
     subArrayY= []
     
     for x in xArray:
-		if nx==0:
-			subArrayX.append(1)
-		else:
-			subArrayX.append((float(fourierNspaltPeriodischIntegrate(x,nx,ax,dx,wl,zs))))
+        if nx==0:
+            subArrayX.append(1)
+        else:
+            subArrayX.append((float(fourierNspaltPeriodischIntegrate(x,nx,ax,dx,wl,zs))))
     for y in yArray:
-		if ny==0:
-			subArrayY.append(1)
-		else:
-			subArrayY.append((float(fourierNspaltPeriodischIntegrate(y,ny,ay,dy,wl,zs))))
+        if ny==0:
+            subArrayY.append(1)
+        else:
+            subArrayY.append((float(fourierNspaltPeriodischIntegrate(y,ny,ay,dy,wl,zs))))
         
     XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
     Ztmp=XX*YY
 
     return Ztmp
 
-## neue Funktionen für die Integration über beliebige Gitterformen
-## (still to be tested, work for normal grids)
-## TBD: change discrete fourier transform to fft
-	
-def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs): ##gibt 1D richtiges Ergebnis
+    
+def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,error,wl,zs): ##gibt 1D richtiges Ergebnis
     ## bietet die Möglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
     ## beliebige Funktion für das Gitter einzusetzen
     
@@ -211,38 +239,37 @@ def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs): ##gibt 1D r
     subArrayY= []
     
     for x in xArray:
-		if nx==0:
-			subArrayX.append(1)
-		else:
-			subArrayX.append(float(fourierNspaltIntegrateAnyFunction(x,nx,ax,dx,wl,zs)))
+        if nx==0:
+            subArrayX.append(1)
+        else:
+            subArrayX.append(float(fourierNspaltIntegrateAnyFunction(x,nx,ax,dx,error,wl,zs)))
     for y in yArray:
-		if ny==0:
-			subArrayY.append(1)
-		else:
-			subArrayY.append(float(fourierNspaltIntegrateAnyFunction(y,ny,ay,dy,wl,zs)))
+        if ny==0:
+            subArrayY.append(1)
+        else:
+            subArrayY.append(float(fourierNspaltIntegrateAnyFunction(y,ny,ay,dy,error,wl,zs)))
 
     XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
     Ztmp=XX*YY
     
     return Ztmp
-	
-def fourierNspaltIntegrateAnyFunction(x,n,a,d,wl,zs):
+    
+def fourierNspaltIntegrateAnyFunction(x,n,a,d,error,wl,zs):
     # Fouriertransformierte von Transmission_Gitter
     
     ## bietet die Möglichkeit eine beliebige Funktion für das Gitter in 'Transmission_n_Spalte(y,n,a,d)' einzusetzen
     
     u = k(wl)*sin(arctan(x/zs))
     #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-    f = lambda y:  Transmission_n_Spalte(y,n,a,d)*exp(-i()*u*y) 
+    f = lambda y:  Transmission_n_Spalte(y,n,a,d,error)*exp(-i()*u*y) 
 
     integral = complex_int(f,-(n-1)*d/2-a,(n-1)*d/2+a)
     #scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
     #matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
     integral =  scipy.real(np.square(np.multiply(n,integral)))
     return integral
-	
-## Ende der beiden Funktionen für die Integration über beliebige Gitterformen
-	
+
+
 def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
     # Fouriertransformierte von Transmission_Einzelspalt
     # Siehe Glg 29 im Theory doc.pdf
@@ -309,8 +336,9 @@ def Transmission_Mittelpunkte(n,d):
 
     return mittelpunkte
 
-def Transmission_n_Spalte(x,n,a,d):
-
+def Transmission_n_Spalte(x,n,a,d,error):
+    #error moves the slits(except the 0 order slit) by error further away from (0,0)
+        
     gesamttransmission = 0.
     i = 1
 
@@ -319,22 +347,47 @@ def Transmission_n_Spalte(x,n,a,d):
 
     while i<=n/2:
         if (n % 2) == 0:
-            gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
+            gesamttransmission += Transmission_Einzelspalt(x-error-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+error+d*(2*i-1)/2,a)
         else:
-            gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
+            gesamttransmission += Transmission_Einzelspalt(x-error-d*i,a) + Transmission_Einzelspalt(x+error+d*i,a)
         i =i+1
 
 
     return gesamttransmission
 
-def Transmission_Gitter(x,y,n,a,d):
-    return Transmission_n_Spalte(x,n,a,d) * Transmission_n_Spalte(y,n,a,d)
+#def Transmission_n_Spalte(x,n,a,d):
+    
+
+
+def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,error):
+    # Returns the transmission for a periodic grid as a matrix with 0/1
+    # to plot it with the contourplot-fct
+    # error is the error of the grid which is given to the Transmission-fct
+    
+    subArrayX=[]
+    subArrayY=[]
+    for x in xArray:
+        if nx==0:
+            subArrayX.append(1)
+        else:
+            subArrayX.append(Transmission_n_Spalte(x,nx,ax,dx,error))
+    for y in yArray:
+        if ny==0:
+            subArrayY.append(1)
+        else:
+            subArrayY.append(Transmission_n_Spalte(y,ny,ay,dy,error))
+
+    XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
+    Ztmp=XX*YY
+    
+    return Ztmp
+
 
 ####__________________________________________________________________
 #### Intensitätsverteilungen für verschiedene Objekte. Ich weiß nicht ob
 #### wir das am Ende so machen können. Für einen Einzelspalt geht es
 ####__________________________________________________________________
-	
+
 
 def interferenz_einzelspalt_manuell(X,a,wl,zs):
 
@@ -346,17 +399,7 @@ def interferenz_Nspalt_manuell(X,n,a,d,wl,zs):
     #alphay = arctan(Y/zs)
     return ((n*sin(pi*n*d/wl*sin(alphax))/(sin(pi*d/wl*sin(alphax))) * a * sinc(pi*a/wl*sin(alphax)))**2)
 
-'''	
-#vermutlich Falsch! Max Intensitaet
-def interferenz_doppelspalt_manuell2(X,a,d,wl,zs): 
-	n=2
-	alphax = arctan(X/zs)
-	#alphay = arctan(Y/zs)
-	u = k(wl)*sin(alphax)
-	#Formel 8 folgend
-	#psi = integrate.quad(Transmission_n_Spalte(x,n,a,d)*exp(-i() * ( k()*sin(alphax)*x + k()*sin(alphay)*y) ),)
-	return((cos(u*d/2)*sin(a*u/2)/(a*u/2))**2)	
-'''
+
 ####__________________________________________________________________
 #### Hauptfunktionen für n Spalte, Gitter, Gitter mit Fehlstelle etc..
 #### Aufzurufen aus der main()
@@ -378,8 +421,8 @@ def spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs):
 
     h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
     plt.show()
-	
-def spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,wl,zs):
+    
+def spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,error,wl,zs):
     # n  : Anzahl der Spalte
     # a  : Größe der Spalte
     # d  : Abstand (egal für Einzelspalt)
@@ -388,11 +431,58 @@ def spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,wl,zs):
     y1  = np.arange(-3., 3., 0.005)
 
     X,Y = np.meshgrid(x1, y1)
-    Z = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    Z = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,error,wl,zs)
     
     h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
     plt.show()
 
+def comparegriderrors(nx,ny,ax,ay,dx,dy,error,wl,zs):
+    # n  : Anzahl der Spalte
+    # a  : Größe der Spalte
+    # d  : Abstand (egal für Einzelspalt)
+    
+    x_Spalt = np.array(np.linspace(-(nx-1)/2*dx-2*ax,(nx-1)/2*dx+2*ax,1200))
+    y_Spalt = np.array(np.linspace(-(ny-1)/2*dy-2*ay,(ny-1)/2*dy+2*ay,1200))
+    
+    X_mat_Spalt, Y_mat_Spalt = np.meshgrid(x_Spalt,y_Spalt)
+    
+    z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,0)
+    z2 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,error)
+    
+    x1  = np.arange(-3., 3., 0.005)
+    y1  = np.arange(-3., 3., 0.005)
+    
+    X,Y = np.meshgrid(x1, y1)
+
+    z3 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z4 = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,error,wl,zs)
+    
+    ## Farbstufen für das Bild
+    levels_z3 = [0, z3.max()/3000, z3.max()/1000, z3.max()/300, z3.max()/100, z3.max()/30, z3.max()/10, z3.max()]
+    cmap_lin = plt.cm.Reds
+    cmap_nonlin_z3 = nlcmap(cmap_lin, levels_z3)
+    
+    
+    fig, ax = plt.subplots(nrows=2, ncols=2)
+    
+    plt.subplot(2,2,1)
+    f = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z1, cmap='gray')
+    
+    plt.subplot(2,2,2)
+    g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2, cmap='gray')
+    
+    plt.subplot(2,2,3)
+    h = plt.contourf(X,Y,z3,levels=levels_z3,cmap=cmap_nonlin_z3)
+    plt.colorbar()
+    #h = plt.contour(X,Y,z3,levels = np.linspace(np.min(z3), np.max(z3), 100))
+        
+    plt.subplot(2,2,4)
+    l = plt.contourf(X,Y,z4,levels=levels_z3,cmap=cmap_nonlin_z3)
+    plt.colorbar()
+    #l = plt.contour(X,Y,z4,levels = np.linspace(np.min(z3), np.max(z3), 100))
+        
+    plt.show()
+    
 def comparefft(nx,ny,ax,ay,dx,dy,wl,zs):
     # n  : Anzahl der Spalte
     # a  : Größe der Spalte
@@ -403,8 +493,8 @@ def comparefft(nx,ny,ax,ay,dx,dy,wl,zs):
     
     X,Y = np.meshgrid(x1, y1)
 
-    z1 = fourierNspaltWithWholeTransmissionFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-    z2 = fourierNspalt(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z1 = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z2 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
     
     X_man=[]
     Y_man=[]
@@ -429,16 +519,17 @@ def comparefft(nx,ny,ax,ay,dx,dy,wl,zs):
     h = plt.contour(X,Y,z3,levels = np.linspace(np.min(z3), np.max(z3), 100))
         
     plt.show()
-	
+    
 def gitter(a,wl,zs):
-	print('nothing here')	
+    print('nothing here')
 
 def gitterMitFehler(a,wl,zs,fehlerarray):
-	print('nothing here')	
+    print('nothing here')
 
 
 if __name__ == "__main__":
-	main()
+    main()
+
 
 
 
