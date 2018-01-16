@@ -478,7 +478,7 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,error,wl,zs):
     
     plt.show()
 	
-def comparefft(nx,ny,ax,ay,dx,dy,wl,zs):
+def comparefft(nx,ny,ax,ay,dx,dy,error,wl,zs):
 	# n  : Anzahl der Spalte
     # a  : Größe der Spalte
     # d  : Abstand (egal für Einzelspalt)
