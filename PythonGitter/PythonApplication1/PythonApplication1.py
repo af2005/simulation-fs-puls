@@ -434,89 +434,137 @@ def spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,error,wl,zs):
 
 def comparegriderrors(nx,ny,ax,ay,dx,dy,error,wl,zs):
 	# n  : Anzahl der Spalte
-	# a  : Größe der Spalte
-	# d  : Abstand (egal für Einzelspalt)
-	
-	x_Spalt = np.array(np.linspace(-(nx-1)/2*dx-2*ax,(nx-1)/2*dx+2*ax,1200))
-	y_Spalt = np.array(np.linspace(-(ny-1)/2*dy-2*ay,(ny-1)/2*dy+2*ay,1200))
-	
-	X_mat_Spalt, Y_mat_Spalt = np.meshgrid(x_Spalt,y_Spalt)
-	
-	z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,0)
-	z2 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,error)
-	
-	x1  = np.arange(-3., 3., 0.005)
-	y1  = np.arange(-3., 3., 0.005)
-	
-	X,Y = np.meshgrid(x1, y1)
+    # a  : Größe der Spalte
+    # d  : Abstand (egal für Einzelspalt)
+    
+    x_Spalt = np.array(np.linspace(-(nx-1)/2*dx-2*ax,(nx-1)/2*dx+2*ax,1200))
+    y_Spalt = np.array(np.linspace(-(ny-1)/2*dy-2*ay,(ny-1)/2*dy+2*ay,1200))
+    
+    X_mat_Spalt, Y_mat_Spalt = np.meshgrid(x_Spalt,y_Spalt)
+    
+    z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,0)
+    z2 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,error)
+    
+    x1  = np.arange(-5., 5., 0.005)
+    y1  = np.arange(-5., 5., 0.005)
+    
+    X,Y = np.meshgrid(x1, y1)
 
-	z3 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	z4 = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,error,wl,zs)
-	
-	## Farbstufen für das Bild
-	levels_z3 = [0, z3.max()/3000, z3.max()/1000, z3.max()/300, z3.max()/100, z3.max()/30, z3.max()/10, z3.max()]
-	cmap_lin = plt.cm.Reds
-	cmap_nonlin_z3 = nlcmap(cmap_lin, levels_z3)
-	
-	
-	fig, ax = plt.subplots(nrows=2, ncols=2)
-	
-	#Plot des Spaltes ohne Fehler
-	plt.subplot(2,2,1)
-	f = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z1, cmap='gray')
-	
-	#Plot des Spaltes mit Fehler
-	plt.subplot(2,2,2)
-	g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2, cmap='gray')
-	
-	plt.subplot(2,2,3)
-	h = plt.contourf(X,Y,z3,levels=levels_z3,cmap=cmap_nonlin_z3)
-	plt.colorbar()
-	#h = plt.contour(X,Y,z3,levels = np.linspace(np.min(z3), np.max(z3), 100))
-		
-	plt.subplot(2,2,4)
-	l = plt.contourf(X,Y,z4,levels=levels_z3,cmap=cmap_nonlin_z3)
-	plt.colorbar()
-	#l = plt.contour(X,Y,z4,levels = np.linspace(np.min(z3), np.max(z3), 100))
-		
-	plt.show()
+    z4 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z5 = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,error,wl,zs)
+    
+    ## Farbstufen für das Bild
+    levels_z4 = [0, z4.max()/3000, z4.max()/1000, z4.max()/300, z4.max()/100, z4.max()/30, z4.max()/10, z4.max()]
+    cmap_lin = plt.cm.Reds
+    cmap_nonlin_z4 = nlcmap(cmap_lin, levels_z4)
+    
+    fig, ax = plt.subplots(nrows=2, ncols=2)
+    
+    plt.subplot(2,2,1)
+    f = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z1, cmap='gray')
+    
+    plt.subplot(2,2,2)
+    g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2, cmap='gray')
+    
+    plt.subplot(2,2,3)
+    h = plt.contourf(X,Y,z4,levels=levels_z4,cmap=cmap_nonlin_z4)
+    plt.colorbar()
+    #h = plt.contour(X,Y,z3,levels = np.linspace(np.min(z3), np.max(z3), 100))
+        
+    plt.subplot(2,2,4)
+    l = plt.contourf(X,Y,z5,levels=levels_z4,cmap=cmap_nonlin_z4)
+    plt.colorbar()
+    #l = plt.contour(X,Y,z4,levels = np.linspace(np.min(z3), np.max(z3), 100))
+    
+    plt.show()
 	
 def comparefft(nx,ny,ax,ay,dx,dy,wl,zs):
 	# n  : Anzahl der Spalte
-	# a  : Größe der Spalte
-	# d  : Abstand (egal für Einzelspalt)
-	
-	x1  = np.arange(-3., 3., 0.005)
-	y1  = np.arange(-3., 3., 0.005)
-	
-	X,Y = np.meshgrid(x1, y1)
+    # a  : Größe der Spalte
+    # d  : Abstand (egal für Einzelspalt)
+    
+    x1  = np.arange(-5., 5., 0.005)
+    y1  = np.arange(-5., 5., 0.005)
+    
+    X,Y = np.meshgrid(x1, y1)
 
-	z1 = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	z2 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	
-	X_man=[]
-	Y_man=[]
-	for x in x1:
-		X_man.append(interferenz_Nspalt_manuell(x,nx,ax,dx,wl,zs))
-	for y in y1:
-		Y_man.append(interferenz_Nspalt_manuell(y,ny,ay,dy,wl,zs))
-	
-	X_grid_man,Y_grid_man = np.meshgrid(X_man, Y_man)
-	
-	z3=X_grid_man*Y_grid_man
-	
-	fig, ax = plt.subplots(nrows=1, ncols=3)
-	
-	plt.subplot(1,3,1)
-	f = plt.contour(X,Y,z1,levels = np.linspace(np.min(z1), np.max(z1), 100))
-	
-	plt.subplot(1,3,2)
-	g = plt.contour(X,Y,z2,levels = np.linspace(np.min(z2), np.max(z2), 100))
-	
-	plt.subplot(1,3,3)
-	h = plt.contour(X,Y,z3,levels = np.linspace(np.min(z3), np.max(z3), 100))
-		
-	plt.show()
+    #z1 = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z2 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    
+    ##NEW
+    #dp=100 # *4(even) *2(odd) datapoints per slit
+    datapoints=6000
+    d=max(dx,dy)
+    n=max(nx,ny)
+    a=max(ax,ay)
+    N = int(np.around(datapoints+1)) #datapoints in the whole array
+    ##  4nd/a | N
+    ## finde noch eine Funktion, die N berechnet
+    print(N)
+    x_Spalt = np.array(np.linspace(-d*n,d*n,N))
+    y_Spalt = np.array(np.linspace(-d*n,d*n,N))
+    
+    dt=(x_Spalt[1]-x_Spalt[0])
+    
+    fa=1.0/dt
+    z1_Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
+    z1_Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
+    
+    
+    index_low =  np.argmax(z1_Xf>-5.0)
+    index_high = np.argmax(z1_Xf>5.0)
+    XX,YY = np.meshgrid(z1_Xf[index_low:index_high],z1_Yf[index_low:index_high])
+    
+    ## 1D Berechnung
+    Transmission_X=[]
+    for x in x_Spalt:
+        Transmission_X.append(Transmission_n_Spalte(x,nx,ax,dx,error))
+    z1Dy=fftshift(np.square(np.abs(fft(Transmission_X))*2/N))
+    
+    
+    ## 2D Berechnung
+    z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,error)
+    z1f = fftshift(np.square(np.abs(fft2(z1))*4/N/N))[index_low:index_high,index_low:index_high]
+    
+    
+    ## Berechnung mit Formel
+    z1normalX=[]
+    z1normalY=[]
+    for x in x1:
+        z1normalX.append(interferenz_Nspalt_manuell(x,nx,ax,dx,wl,zs))
+        #z1normalX.append(interferenz_einzelspalt_manuell(x,ax,wl,zs))
+    for y in y1:
+        #z1normalY.append(interferenz_einzelspalt_manuell(y,ay,wl,zs))
+        z1normalY.append(interferenz_Nspalt_manuell(y,ny,ay,dy,wl,zs))
+    z1nX,z1nY = np.meshgrid(z1normalX,z1normalY)
+    z1normal = z1nX*z1nY
+    
+    ## Farbstufen für das Bild
+    levels_z1 = [0, z1f.max()/3000, z1f.max()/1000, z1f.max()/300, z1f.max()/100, z1f.max()/30, z1f.max()/10, z1f.max()]
+    cmap_lin = plt.cm.Reds
+    cmap_nonlin_z1 = nlcmap(cmap_lin, levels_z1)
+    
+    levels_z2 = [0, z2.max()/3000, z2.max()/1000, z2.max()/300, z2.max()/100, z2.max()/30, z2.max()/10, z2.max()]
+    cmap_lin = plt.cm.Reds
+    cmap_nonlin_z2 = nlcmap(cmap_lin, levels_z2)
+    
+    fig, ax = plt.subplots(nrows=1, ncols=3)
+    
+    plt.subplot(1,3,1)
+    #h = plt.plot(z1_Xf[index_low:index_high],z1Dy[index_low:index_high])
+    h = plt.contourf(XX,YY,z1f,levels=levels_z1,cmap=cmap_nonlin_z1)
+    plt.colorbar()
+    
+    plt.subplot(1,3,2)
+    #f = plt.plot(x1,z1normalX)
+    f = plt.contourf(X,Y,z1normal,levels=levels_z2,cmap=cmap_nonlin_z2)
+    plt.colorbar()
+    
+    plt.subplot(1,3,3)
+    g = plt.contourf(X,Y,z2,levels=levels_z2,cmap=cmap_nonlin_z2)
+    plt.colorbar()
+          
+    plt.show()
 	
 if __name__ == "__main__":
 	main()
