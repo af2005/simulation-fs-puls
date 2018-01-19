@@ -66,7 +66,7 @@ def main():
 	parser.add_argument('--ay', dest='ay', help='Spalthoehe in um',default=5)
 	parser.add_argument('--dx', dest='dx', help='Spaltabstand in horizontaler Richtung in um',default=10)
 	parser.add_argument('--dy', dest='dy', help='Spaltabstand in vertikaler Richtung in um',default=10)
-	parser.add_argument('--errortype', dest='error', help='Gitterfehlertyp',default=1)
+	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp',default=1)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--abstand', dest='zs', help='Schirmabstand in cm',default=350)
 	
