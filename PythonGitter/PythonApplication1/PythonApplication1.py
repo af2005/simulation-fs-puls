@@ -67,7 +67,7 @@ def main():
 	parser.add_argument('--ay', dest='ay', help='Spalthoehe in um',default=5)
 	parser.add_argument('--dx', dest='dx', help='Spaltabstand in horizontaler Richtung in um',default=10)
 	parser.add_argument('--dy', dest='dy', help='Spaltabstand in vertikaler Richtung in um',default=10)
-	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp',default=1)
+	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--abstand', dest='zs', help='Schirmabstand in cm',default=350)
 	
@@ -112,7 +112,7 @@ def main():
 	ay = int(args.ay)  * 1e-6
 	dx = int(args.dx)  * 1e-6
 	dy = int(args.dy)  * 1e-6
-	error = int(args.error)
+	errortype = int(args.errortype)
 	wl = int(args.wl) * 1e-9
 	zs = int(args.zs) * 1e-2
 	
@@ -292,18 +292,18 @@ def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
 
 
 def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimmt, Skalierung noch nicht
-    datapoints = 1199
+    datapoints = 6000
     d = max(dx,dy)
     n = max(nx,ny)
     a = max(ax,ay)
     N = int(np.around(datapoints+1)) #datapoints in the whole array
     ##  4nd/a | N-1
     ## finde noch eine Funktion, die N berechnet
-    x_Spalt = np.array(np.linspace(-dx*nx/2,dx*nx/2,N))
-    y_Spalt = np.array(np.linspace(-dy*ny/2,dy*ny/2,N))
+    x_Spalt = np.array(np.linspace(-d*n/2,d*n/2,N))
+    y_Spalt = np.array(np.linspace(-d*n/2,d*n/2,N))
     
-    dx = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich (momemtan)
-    fa = 1.0/dx #Nyquist-Frequenz
+    deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich (momemtan)
+    fa = 1.0/deltax #Nyquist-Frequenz
     ## Nächste Kommentarzeile noch zu verbessern!##
     Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren, zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. ????
     Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
@@ -316,7 +316,7 @@ def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisf
     z2D = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
     print(np.count_nonzero(z2D))
     z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
-    return X_Schirm, Y_Schirm, z2Df, z2D
+    return X_Schirm, Y_Schirm, z2Df
 
 def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs): ##gibt 1D richtiges Ergebnis
     datapoints = 6000
@@ -584,7 +584,7 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     X,Y = np.meshgrid(x1, y1)
 
     z4 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-    XX, YY, z2Df, z2D = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+    XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     
     ## Farbstufen für das Bild
     levels_z4 = [0, z4.max()/3000, z4.max()/1000, z4.max()/300, z4.max()/100, z4.max()/30, z4.max()/10, z4.max()]
@@ -601,7 +601,7 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     f = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z1, cmap='gray')
     
     plt.subplot(2,2,2)
-    g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2D, cmap='gray')
+    g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2, cmap='gray')
     
     plt.subplot(2,2,3)
     h = plt.contourf(X,Y,z4,levels=levels_z4,cmap=cmap_nonlin_z4)
