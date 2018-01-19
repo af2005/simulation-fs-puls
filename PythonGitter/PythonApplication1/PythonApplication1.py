@@ -14,6 +14,7 @@ from numpy import arcsin as arcsin
 from numpy import arccos as arccos
 from numpy import arctan as arctan
 from numpy import exp as exp
+import random
 
 from numpy.fft import fft as fft
 from numpy.fft import fft2 as fft2
