@@ -6,6 +6,7 @@
 import math
 import cmath
 import numpy as np
+import sys
 
 from numpy import sin as sin
 from numpy import cos as cos
@@ -116,6 +117,10 @@ def main():
 	wl = int(args.wl) * 1e-9
 	zs = int(args.zs) * 1e-2
 	
+	
+	if nx==0 and ny==0:
+		print('you mad?! ending calculations')
+		sys.exit(0)
 
 	#__________________________________________________________________
 	# Mehrere Gitter / Wellenlängen Überlagerung
@@ -154,13 +159,9 @@ def main():
         error_row=[]
         for j in range(nx):
             error_row.append([[random.uniform(-0.1,0.1),random.uniform(0.9,1.1)],[random.uniform(-0.1,0.1),random.uniform(0.9,1.1)]])
-            #error_row.append([[0.5*j,0.5*(j+1)],[0.5*i,0.5*(i+1)]])
         error_matrix.append(error_row)
     error_matrix = np.array(error_matrix)
 
-    #for i in range(ny):
-    #    for j in range(nx):
-    #        print(error_array[i,j,0])
     #comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     #spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs)
     #spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
@@ -299,11 +300,11 @@ def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisf
     N = int(np.around(datapoints+1)) #datapoints in the whole array
     ##  4nd/a | N-1
     ## finde noch eine Funktion, die N berechnet
-    x_Spalt = np.array(np.linspace(-d*n/2,d*n/2,N))
-    y_Spalt = np.array(np.linspace(-d*n/2,d*n/2,N))
+    x_Spalt = np.array(np.linspace(-d*n,d*n,N))
+    y_Spalt = np.array(np.linspace(-d*n,d*n,N))
     
-    deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich (momemtan)
-    fa = 1.0/deltax #Nyquist-Frequenz
+    dt = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich (momemtan)
+    fa = 1.0/dt #Nyquist-Frequenz
     ## Nächste Kommentarzeile noch zu verbessern!##
     Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren, zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. ????
     Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
@@ -312,10 +313,18 @@ def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisf
     index_high = np.argmax(Xf>5.0)
     X_Schirm, Y_Schirm = np.meshgrid(Xf[index_low:index_high],Yf[index_low:index_high])
     
-    ## 2D Berechnung
-    z2D = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
-    print(np.count_nonzero(z2D))
-    z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
+	if nx==0:  ## then only integrate in y-direction
+		Schirm, z1Dfy = fftNspalt1D_XZ(ny,ay,dy,errortype,error_matrix[:,:,1],wl,zs) ## error_matrix[:,:,1] is the array of the error-values in y-direction
+		z1Df_X, z1Df_Y = np.meshgrid(np.ones(index_low-index_high),z1Dfy[index_high:index_low])
+		z2Df = z1Df_X * z1Df_Y
+	elif ny==0: ## then only integrate in x-direction
+		Schirm, z1Dfx = fftNspalt1D_XZ(nx,ax,dx,errortype,error_matrix[:,:,0],wl,zs) ## error_matrix[:,:,0] is the array of the error-values in x-direction
+		z1Df_X, z1Df_Y = np.meshgrid(z1Dfx[index_low:index_high],np.ones(index_high-index_low))
+		z2Df = z1Df_X * z1Df_Y
+	else:
+		## 2D Berechnung
+		z2D = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
+		z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
     return X_Schirm, Y_Schirm, z2Df
 
 def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs): ##gibt 1D richtiges Ergebnis
@@ -431,17 +440,6 @@ def Transmission_n_Spalte(x,n,a,d,errortype,error_array):
         gesamttransmission = 0.
         
 
-        '''
-        i = 1
-        if (n % 2) == 1:
-            gesamttransmission = Transmission_Einzelspalt(x,a)
-
-        while i<=n/2:
-            if (n % 2) == 0:
-                gesamttransmission += Transmission_Einzelspalt(x-d*(2*i-1)/2,a) + Transmission_Einzelspalt (x+d*(2*i-1)/2,a)
-            else:
-                gesamttransmission += Transmission_Einzelspalt(x-d*i,a) + Transmission_Einzelspalt(x+d*i,a)
-            i =i+1'''
         for i in range(n):
             gesamttransmission += Transmission_Einzelspalt(x+d*(i-n/2+0.5),a)
     
@@ -471,23 +469,16 @@ def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
     ## Integriere für jeden einzelnen Spalt separat, fülle die restlichen Gebiete des Ergebnisses mit 1
     ## multipliziere die einzelnen Spaltfouriertransformierten um das Gesamtergebnis zu erhalten
     Ztmp=[]
-    NoSlit=False #is set to True if either nx or ny==1, so there is no slit in that direction and the intensities will have to be multiplied instead of summed up for each quadrant
-    
+        
     for i in range(nx):
         for j in range(ny):
             for x in xArray:
-                if nx==0:
-                    subArrayX.append(1)
-                    NoSlit=True
-                elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
+                 elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
                     subArrayX.append(Transmission_n_Spalte(x,nx,ax,dx,errortype,error_matrix[j,i,0,:]))
                 else:
                     subArrayX.append(0)
             for y in yArray:
-                if ny==0:
-                    subArrayY.append(1)
-                    NoSlit=True
-                elif y > ((j-1-(ny-2))/2*dy) and y <= ((j-(ny-2))/2*dy):
+                elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
                     subArrayY.append(Transmission_n_Spalte(y,ny,ay,dy,errortype,error_matrix[j,i,1,:]))
                 else:
                     subArrayY.append(0)
@@ -500,10 +491,7 @@ def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
     
     Ztotal=Ztmp[0]
     for k in range(1,len(Ztmp)):
-        if NoSlit==False:
-            Ztotal+=Ztmp[k]
-        else:
-            Ztotal*=Ztmp[k]
+        Ztotal+=Ztmp[k]
     
     return np.array(Ztotal)
             
@@ -524,9 +512,9 @@ def interferenz_Nspalt_manuell(X,n,a,d,wl,zs):
     return ((n*sin(pi*n*d/wl*sin(alphax))/(sin(pi*d/wl*sin(alphax))) * a * sinc(pi*a/wl*sin(alphax)))**2)
 
 
-
-
-
+	
+	
+	
 ####__________________________________________________________________
 #### Hauptfunktionen für n Spalte, Gitter, Gitter mit Fehlstelle etc..
 #### Aufzurufen aus der main()
@@ -567,16 +555,16 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     # n  : Anzahl der Spalte
     # a  : Größe der Spalte
     # d  : Abstand (egal für Einzelspalt)
-    
-    x_Spalt = np.array(np.linspace(-nx*dx/2,nx*dx/2,1200))
-    y_Spalt = np.array(np.linspace(-ny*dy/2,ny*dy/2,1200))
+	d=max(dx,dy)
+    n=max(nx,ny)
+    a=max(ax,ay)    
+    x_Spalt = np.array(np.linspace(-n*d/2,n*d/2,1200))
+    y_Spalt = np.array(np.linspace(-n*d/2,n*d/2,1200))
     
     X_mat_Spalt, Y_mat_Spalt = np.meshgrid(x_Spalt,y_Spalt)
     
     z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,0,error_matrix)
-    print(np.count_nonzero(z1))
     z2 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
-    print(np.count_nonzero(z2))
     
     x1  = np.arange(-5., 5., 0.005)
     y1  = np.arange(-5., 5., 0.005)
@@ -606,12 +594,10 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     plt.subplot(2,2,3)
     h = plt.contourf(X,Y,z4,levels=levels_z4,cmap=cmap_nonlin_z4)
     plt.colorbar()
-    #h = plt.contour(X,Y,z3,levels = np.linspace(np.min(z3), np.max(z3), 100))
-        
+    
     plt.subplot(2,2,4)
     l = plt.contourf(XX,YY,z2Df,levels=levels_z2Df,cmap=cmap_nonlin_z2Df)
     plt.colorbar()
-    #l = plt.contour(X,Y,z4,levels = np.linspace(np.min(z3), np.max(z3), 100))
     
     plt.show()
     
@@ -657,17 +643,13 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     
     fig, ax = plt.subplots(nrows=1, ncols=3)
     
-    print(z2Df.max())
-    print(z3.max())
-    print(z2Df.max()/z3.max())
-    
     plt.subplot(1,3,1)
-    #h = plt.plot(x1Df, z1Df)
+    #h = plt.plot(x1Df, z1Df)  ## plot 1D-fft
     h = plt.contourf(XX,YY,z2Df,levels=levels_z1,cmap=cmap_nonlin_z1)
     plt.colorbar()
     
     plt.subplot(1,3,2)
-    #f = plt.plot(x1,z1normalX)
+    #f = plt.plot(x1,z1normalX) ## plot 1D-analytisch
     f = plt.contourf(X,Y,z2normal,levels=levels_z3,cmap=cmap_nonlin_z3)
     plt.colorbar()
     
