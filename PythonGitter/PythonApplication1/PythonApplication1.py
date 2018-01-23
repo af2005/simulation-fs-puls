@@ -119,6 +119,9 @@ def main():
 	zs = int(args.zs) * 1e-2
 	
 	
+	matplotlib.rcParams.update({'font.size': 30}) ## change font size
+
+	
 	if nx==0 and ny==0:
 		print('Ohne Gitter gibt es keine Berechnung...')
 		sys.exit(0)
