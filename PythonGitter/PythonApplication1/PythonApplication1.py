@@ -182,6 +182,15 @@ def main():
 		    
 		mainloop()
 		print(imagearray)
+		X,Y,Z = fftCanvas2D_XYZ(imagearray)
+		
+		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
+		cmap_lin = plt.cm.Reds
+		cmap_nonlin_Z = nlcmap(cmap_lin, levels_Z)
+		
+		plt.figure()
+		plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
+		plt.colorbar()
 	else:
 			#__________________________________________________________________
 		# Mehrere Gitter / Wellenlängen Überlagerung
@@ -356,6 +365,37 @@ def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
 	for k in range(1,len(Ztmp)):
 		Ztotal+=Ztmp[k]
 	return Ztotal
+
+def fftCanvas2D_XYZ(imagearray):
+	## 2D Berechnung
+	d = 1e-6
+	n = 1
+	a = 1e-6
+	N = 2000 ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+	x_Spalt = np.array(np.linspace(-1000,1000,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+	y_Spalt = np.array(np.linspace(-1000,1000,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+
+	
+	z2D = np.hstack((np.zeros((imagearray.shape[0], (N-imagearray.shape[1])/2)), imagearray, np.zeros((imagearray.shape[0], (N-imagearray.shape[1])/2))))
+	z2D = np.vstack((np.zeros((z2D.shape[1], (N-z2D.shape[0])/2)), imagearray, np.zeros((z2D.shape[1], (N-imagearray.shape[0])/2))))
+	deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich
+	fa = 1.0/deltax #Nyquist-Frequenz
+	Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
+	# zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
+	# hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
+	# unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
+	# so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehört.
+	# So wird Xf berechnet, welches jedem Intensitätswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
+	Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
+
+	index_low =  np.argmax(Xf>-5.0) #Beschränke den Plot auf -5m bis +5m auf dem Screen
+	index_high = np.argmax(Xf>5.0)
+	if index_high==0:
+		index_high = len(Xf)
+	X_Schirm, Y_Schirm = np.meshgrid(Xf[index_low:index_high],Yf[index_low:index_high])
+	
+	z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
+	return X_Schirm, Y_Schirm, z2Df
 
 
 def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimmt, Skalierung noch nicht
