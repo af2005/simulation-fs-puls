@@ -7,6 +7,7 @@ import math
 import cmath
 import numpy as np
 import sys
+import time
 
 from numpy import sin as sin
 from numpy import cos as cos
@@ -589,6 +590,7 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     # n  : Anzahl der Spalte
     # a  : Größe der Spalte
     # d  : Abstand (egal für Einzelspalt)
+    start_time = time.time()
     
     d=max(dx,dy)
     n=max(nx,ny)
@@ -611,6 +613,7 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     z2Df /= np.nanmax(z2Df)
     
+    print("Berechnungen dauerten: " + str(time.time() - start_time))
     ## Farbstufen für das Bild
     levels_z4 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
     cmap_lin = plt.cm.Reds
@@ -636,10 +639,13 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
         
     plt.show()
 
+    print("Berechnungen und Plot dauerten: " + str(time.time() - start_time))
+    
 def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     # n  : Anzahl der Spalte
     # a  : Größe der Spalte
     # d  : Abstand (egal für Einzelspalt)
+    start_time = time.time()
     
     x1  = np.linspace(-5., 5., 1200)
     y1  = np.linspace(-5., 5., 1200)
@@ -657,6 +663,8 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     #Berechnung fft 2D
     XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     z2Df/=z2Df.max()
+    
+    print("Berechnungen dauerten: " + str(time.time() - start_time))
     
     ## Farbstufen für das Bild
     levels_z1 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
@@ -681,6 +689,8 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     plt.colorbar()
           
     plt.show()
+    
+    print("Berechnungen und Plot dauerten: " + str(time.time() - start_time))
 	
 if __name__ == "__main__":
 	main()
