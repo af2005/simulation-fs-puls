@@ -372,12 +372,14 @@ def fftCanvas2D_XYZ(imagearray):
 	n = 1
 	a = 1e-6
 	N = 2000 ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
-	x_Spalt = np.array(np.linspace(-1000,1000,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-	y_Spalt = np.array(np.linspace(-1000,1000,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-
+	x_Spalt = np.array(np.linspace(-d*10,d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+	y_Spalt = np.array(np.linspace(-d*10,d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
 	
-	z2D = np.hstack((np.zeros((imagearray.shape[0], (N-imagearray.shape[1])/2)), imagearray, np.zeros((imagearray.shape[0], (N-imagearray.shape[1])/2))))
-	z2D = np.vstack((np.zeros((z2D.shape[1], (N-z2D.shape[0])/2)), imagearray, np.zeros((z2D.shape[1], (N-imagearray.shape[0])/2))))
+	z2D = np.hstack((np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2))), imagearray,
+                     np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2)))))
+    z2D = np.vstack((np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1]))), z2D,
+                     np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1])))))
+	
 	deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich
 	fa = 1.0/deltax #Nyquist-Frequenz
 	Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
