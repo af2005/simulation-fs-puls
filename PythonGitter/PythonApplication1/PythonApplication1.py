@@ -197,7 +197,8 @@ def main():
 			for entry in row:
 				rowcontent += str(entry)
 			print(rowcontent)
-	
+		X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2*1e-7,trans.shape[1]/2*1e-7,trans.shape[1]), np.linspace(-trans.shape[0]/2*1e-7,trans.shape[0]/2*1e-7,trans.shape[0]))
+		trans=np.array(imagearray)
 		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs)
 		Z /= np.nanmax(Z)
 		
@@ -205,10 +206,15 @@ def main():
 		cmap_lin = plt.cm.Reds
 		cmap_nonlin_Z = nlcmap(cmap_lin, levels_Z)
 		
-		plt.figure()
+		fig, ax = plt.subplots(nrows=1, ncols=2)
+	
+		plt.subplot(1,2,1)
+		plt.contourf(X_trans,Y_trans,trans,cmap='gray')
+		
+		plt.subplot(1,2,2)
 		plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
 		plt.colorbar()
-		
+				
 		plt.show()
 	else:
 			#__________________________________________________________________
@@ -385,14 +391,14 @@ def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
 		Ztotal+=Ztmp[k]
 	return Ztotal
 
-def fftCanvas2D_XYZ(imagearray,wl,zs):
+def fftCanvas2D_XYZ(imagearray,wl,zs): ## 1 pixel = 0.1 um
 	## 2D Berechnung
 	d = 1e-6
 	n = 1
 	a = 1e-6
-	N = 2000 ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
-	x_Spalt = np.array(np.linspace(-d*10,d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-	y_Spalt = np.array(np.linspace(-d*10,d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+	N = 800 ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+	x_Spalt = np.array(np.linspace(-N/2*1e-7,N/2*1e-7,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+	y_Spalt = np.array(np.linspace(-N/2*1e-7,N/2*1e-7,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
 	
 	z2D = np.hstack((np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2))), imagearray,
 					 np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2)))))
