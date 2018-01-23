@@ -155,21 +155,21 @@ def main():
 		zs = float(input("Abstand des Schirms in cm? "))
 	'''
 
-    error_matrix = []
-    for i in range(ny):
-        error_row=[]
-        for j in range(nx):
-            error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
-        error_matrix.append(error_row)
-    error_matrix = np.array(error_matrix)
+	error_matrix = []
+	for i in range(ny):
+		error_row=[]
+		for j in range(nx):
+			error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
+		error_matrix.append(error_row)
+	error_matrix = np.array(error_matrix)
 
-    #comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-    #spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs)
-    #spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-    comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-    
-    #__________________________________________________________________
-    # Ende der main()
+	#comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	#spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs)
+	#spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	
+	#__________________________________________________________________
+	# Ende der main()
 
 
 ####__________________________________________________________________
@@ -180,48 +180,48 @@ def main():
 ####__________________________________________________________________
 
 def kgV2(a, b):
-    ## gibt das KgV der beiden ints a und b zurück
-    return (a * b) // math.gcd(a, b)
+	## gibt das KgV der beiden ints a und b zurück
+	return (a * b) // math.gcd(a, b)
 
 def kgV_arr(numbers):
-    ## gibt das kgV einer beliebigen Liste von Ints zurück
-    kgV = numbers[0]
-    for i in range(1,len(numbers)):
-        kgV=kgV2(kgV,numbers[i])
-    return kgV
+	## gibt das kgV einer beliebigen Liste von Ints zurück
+	kgV = numbers[0]
+	for i in range(1,len(numbers)):
+		kgV=kgV2(kgV,numbers[i])
+	return kgV
 
 def k(wl):
-    # Kreiswellenzahl
-    return 2 * np.pi / wl 
+	# Kreiswellenzahl
+	return 2 * np.pi / wl 
 def w(wl):
-    # Kreisfrequenz Omega
-    return c() * k(wl) 
+	# Kreisfrequenz Omega
+	return c() * k(wl) 
 def f(wl):
-    # Frequenz
-    return c() / wl 
+	# Frequenz
+	return c() / wl 
 def c():
-    return float(299792458) # m/s
+	return float(299792458) # m/s
 
 def sinc(x):
-    return sin(x)/x
+	return sin(x)/x
 
 def i():
-    return complex(0,1)
+	return complex(0,1)
 
 def dirac(x,mu):
-    #ich weiß noch nicht wie es am besten ist hier dran zu gehen. 
-    #Das hier ist eine gängige Approximation für mu->infinity
-    return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
+	#ich weiß noch nicht wie es am besten ist hier dran zu gehen. 
+	#Das hier ist eine gängige Approximation für mu->infinity
+	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
 
 #sollte keinen Unterschied fuer uns machen, da das Ergebnis immer real ist (zumindest fuer n Spalte)
 def complex_int(func, a, b, **kwargs):
-    def real_func(x):
-        return scipy.real(func(x))
-    def imag_func(x):
-        return scipy.imag(func(x))
-    real_integral = integrate.quad(real_func, a, b, **kwargs)
-    imag_integral = integrate.quad(imag_func, a, b, **kwargs)
-    return (real_integral[0] + i()*imag_integral[0])
+	def real_func(x):
+		return scipy.real(func(x))
+	def imag_func(x):
+		return scipy.imag(func(x))
+	real_integral = integrate.quad(real_func, a, b, **kwargs)
+	imag_integral = integrate.quad(imag_func, a, b, **kwargs)
+	return (real_integral[0] + i()*imag_integral[0])
 
 
 ####__________________________________________________________________
@@ -229,296 +229,296 @@ def complex_int(func, a, b, **kwargs):
 ####__________________________________________________________________ 
 
 def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  ##funktioniert
-    #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
-    #beim Integrieren bzw bei der fft schief geht.
-    subArrayX= []
-    subArrayY= []
-    
-    for x in xArray:
-        if nx==0:
-            subArrayX.append(1)
-        else:
-            subArrayX.append(float(fourierNspaltPeriodischIntegrate(x,nx,ax,dx,wl,zs)))
-    for y in yArray:
-        if ny==0:
-            subArrayY.append(1)
-        else:
-            subArrayY.append(float(fourierNspaltPeriodischIntegrate(y,ny,ay,dy,wl,zs)))
-        
-    XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
-    Ztmp=XX*YY
+	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
+	#beim Integrieren bzw bei der fft schief geht.
+	subArrayX= []
+	subArrayY= []
+	
+	for x in xArray:
+		if nx==0:
+			subArrayX.append(1)
+		else:
+			subArrayX.append(float(fourierNspaltPeriodischIntegrate(x,nx,ax,dx,wl,zs)))
+	for y in yArray:
+		if ny==0:
+			subArrayY.append(1)
+		else:
+			subArrayY.append(float(fourierNspaltPeriodischIntegrate(y,ny,ay,dy,wl,zs)))
+		
+	XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
+	Ztmp=XX*YY
 
-    return Ztmp
+	return Ztmp
 
-    
+	
 def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##gibt 1D richtiges Ergebnis
-    ## bietet die Möglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
-    ## beliebige Funktion für das Gitter einzusetzen
-    
-    #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
-    #beim Integrieren bzw bei der fft schief geht.
-    subArrayX= []
-    subArrayY= []
-    
-    ## Teile xArray an Mittelpunkten zwischen den Spalten in Teile von
-    ##     [:-(nx-2)/2*dx][-(nx-2)/2*dx:(i-(nx-2)/2*dx)][...] i in range(nx-1)
-    ## Teile yArray an Mittelpunkten zwischen den Spalten in Teile von
-    ##     [:-(ny-2)/2*dy][-(ny-2)/2*dy:(j-(ny-2)/2*dy)][...] j in range(ny-1)
-    ## Erhalte somit nx*ny Teilstücke des Gitters, in denen sich jeweils ein Spalt befindet
-    ## Integriere für jeden einzelnen Spalt separat, fülle die restlichen Gebiete des Ergebnisses mit 1
-    ## multipliziere die einzelnen Spaltfouriertransformierten um das Gesamtergebnis zu erhalten
-    Ztmp=[]
-    
-    for i in range(nx):
-        for j in range(ny):
-            for x in xArray:
-                if nx==0:
-                    subArrayX.append(1)
-                elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
-                    subArrayX.append(float(fourierNspaltIntegrateAnyFunction(x,nx,ax,dx,errortype,error_matrix[j,:,0],wl,zs)))
-                else:
-                    subArrayX.append(0)
-            
-            for y in yArray:
-                if ny==0:
-                    subArrayY.append(1)
-                elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
-                    subArrayY.append(float(fourierNspaltIntegrateAnyFunction(y,ny,ay,dy,errortype,error_matrix[:,i,1],wl,zs)))
-                else:
-                    subArrayY.append(0)
-                    
-            XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
-            Ztmp.append(XX*YY)
-            subArrayX= []
-            subArrayY= []
-    
-    Ztotal=Ztmp[0]
-    for k in range(1,len(Ztmp)):
-        Ztotal+=Ztmp[k]
-    return Ztotal
+	## bietet die Möglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
+	## beliebige Funktion für das Gitter einzusetzen
+	
+	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
+	#beim Integrieren bzw bei der fft schief geht.
+	subArrayX= []
+	subArrayY= []
+	
+	## Teile xArray an Mittelpunkten zwischen den Spalten in Teile von
+	##     [:-(nx-2)/2*dx][-(nx-2)/2*dx:(i-(nx-2)/2*dx)][...] i in range(nx-1)
+	## Teile yArray an Mittelpunkten zwischen den Spalten in Teile von
+	##     [:-(ny-2)/2*dy][-(ny-2)/2*dy:(j-(ny-2)/2*dy)][...] j in range(ny-1)
+	## Erhalte somit nx*ny Teilstücke des Gitters, in denen sich jeweils ein Spalt befindet
+	## Integriere für jeden einzelnen Spalt separat, fülle die restlichen Gebiete des Ergebnisses mit 1
+	## multipliziere die einzelnen Spaltfouriertransformierten um das Gesamtergebnis zu erhalten
+	Ztmp=[]
+	
+	for i in range(nx):
+		for j in range(ny):
+			for x in xArray:
+				if nx==0:
+					subArrayX.append(1)
+				elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
+					subArrayX.append(float(fourierNspaltIntegrateAnyFunction(x,nx,ax,dx,errortype,error_matrix[j,:,0],wl,zs)))
+				else:
+					subArrayX.append(0)
+			
+			for y in yArray:
+				if ny==0:
+					subArrayY.append(1)
+				elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
+					subArrayY.append(float(fourierNspaltIntegrateAnyFunction(y,ny,ay,dy,errortype,error_matrix[:,i,1],wl,zs)))
+				else:
+					subArrayY.append(0)
+					
+			XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
+			Ztmp.append(XX*YY)
+			subArrayX= []
+			subArrayY= []
+	
+	Ztotal=Ztmp[0]
+	for k in range(1,len(Ztmp)):
+		Ztotal+=Ztmp[k]
+	return Ztotal
 
 
 def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimmt, Skalierung noch nicht
-        
-    
-    if nx==0:  ## then only integrate in y-direction
-        Schirm, z1Dfy = fftNspalt1D_XZ(ny,ay,dy,errortype,error_matrix[:,0,1],wl,zs) ## error_matrix[:,0,1] is the array of the error-values in y-direction
-        z1Df_X, z1Df_Y = np.meshgrid(np.ones(len(z1Dfy)),z1Dfy)
-        z2Df = z1Df_X * z1Df_Y
-        X_Schirm, Y_Schirm = np.meshgrid(Schirm,Schirm)
-    elif ny==0: ## then only integrate in x-direction
-        Schirm, z1Dfx = fftNspalt1D_XZ(nx,ax,dx,errortype,error_matrix[0,:,0],wl,zs) ## error_matrix[0,:,0] is the array of the error-values in x-direction
-        z1Df_X, z1Df_Y = np.meshgrid(z1Dfx,np.ones(len(z1Dfx)))
-        z2Df = z1Df_X * z1Df_Y
-        X_Schirm, Y_Schirm = np.meshgrid(Schirm,Schirm)
-    else:
-        ## 2D Berechnung
-        d = max(dx,dy)
-        n = max(nx,ny)
-        a = max(ax,ay)
-        datapoints = kgV_arr([int(d*1e6*20*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-        while(datapoints*wl/4/n/d/10<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
-            datapoints*=2                                   ## 0.82 für Plot bis +-5m
-        N = datapoints+1                                    ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
-        x_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-        y_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+		
+	
+	if nx==0:  ## then only integrate in y-direction
+		Schirm, z1Dfy = fftNspalt1D_XZ(ny,ay,dy,errortype,error_matrix[:,0,1],wl,zs) ## error_matrix[:,0,1] is the array of the error-values in y-direction
+		z1Df_X, z1Df_Y = np.meshgrid(np.ones(len(z1Dfy)),z1Dfy)
+		z2Df = z1Df_X * z1Df_Y
+		X_Schirm, Y_Schirm = np.meshgrid(Schirm,Schirm)
+	elif ny==0: ## then only integrate in x-direction
+		Schirm, z1Dfx = fftNspalt1D_XZ(nx,ax,dx,errortype,error_matrix[0,:,0],wl,zs) ## error_matrix[0,:,0] is the array of the error-values in x-direction
+		z1Df_X, z1Df_Y = np.meshgrid(z1Dfx,np.ones(len(z1Dfx)))
+		z2Df = z1Df_X * z1Df_Y
+		X_Schirm, Y_Schirm = np.meshgrid(Schirm,Schirm)
+	else:
+		## 2D Berechnung
+		d = max(dx,dy)
+		n = max(nx,ny)
+		a = max(ax,ay)
+		datapoints = kgV_arr([int(d*1e6*20*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
+		while(datapoints*wl/4/n/d/10<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+			datapoints*=2                                   ## 0.82 für Plot bis +-5m
+		N = datapoints+1                                    ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+		x_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+		y_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
 
-        deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich
-        fa = 1.0/deltax #Nyquist-Frequenz
-        Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
-        # zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
-        # hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
-        # unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
-        # so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehört.
-        # So wird Xf berechnet, welches jedem Intensitätswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
-        Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
+		deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich
+		fa = 1.0/deltax #Nyquist-Frequenz
+		Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
+		# zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
+		# hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
+		# unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
+		# so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehört.
+		# So wird Xf berechnet, welches jedem Intensitätswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
+		Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
 
-        index_low =  np.argmax(Xf>-5.0) #Beschränke den Plot auf -5m bis +5m auf dem Screen
-        index_high = np.argmax(Xf>5.0)
-        if index_high==0:
-            index_high = len(Xf)
-        X_Schirm, Y_Schirm = np.meshgrid(Xf[index_low:index_high],Yf[index_low:index_high])
-        
-        z2D = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
-        z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
-    return X_Schirm, Y_Schirm, z2Df
+		index_low =  np.argmax(Xf>-5.0) #Beschränke den Plot auf -5m bis +5m auf dem Screen
+		index_high = np.argmax(Xf>5.0)
+		if index_high==0:
+			index_high = len(Xf)
+		X_Schirm, Y_Schirm = np.meshgrid(Xf[index_low:index_high],Yf[index_low:index_high])
+		
+		z2D = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
+		z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
+	return X_Schirm, Y_Schirm, z2Df
 
 def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs):
-    datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-    while(datapoints*wl/4/nx/dx/10<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
-        datapoints*=2                                     ## 0.82 für Plot bis +-5m
-    N = datapoints+1                                      ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
-    
-    x_Spalt = np.array(np.linspace(-dx*nx*10,dx*nx*10,N)) ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-    
-    deltax = (x_Spalt[1]-x_Spalt[0])
-    fa = 1.0/deltax #Nyquist-Frequenz
-    Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
-    # zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
-    # hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
-    # unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
-    # so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehört.
-    # So wird Xf berechnet, welches jedem Intensitätswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
-    
-    index_low = np.argmax(Xf>-5.0) #Beschränke den Plot auf -5m bis +5m auf dem Screen
-    index_high = np.argmax(Xf>5.0)
-    if index_high==0:
-        index_high=len(Xf)
-    X_Schirm = Xf[index_low:index_high]
-    
-    ## 1D Berechnung
-    Transmission_X = []
-    for x in x_Spalt:
-        Transmission_X.append(Transmission_n_Spalte(x,nx,ax,dx,errortype,error_array))
-    z1Df = fftshift(np.square(np.abs(fft(Transmission_X))*2/N))
-        
-    return X_Schirm, z1Df[index_low:index_high]
-    
+	datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
+	while(datapoints*wl/4/nx/dx/10<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+		datapoints*=2                                     ## 0.82 für Plot bis +-5m
+	N = datapoints+1                                      ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+	
+	x_Spalt = np.array(np.linspace(-dx*nx*10,dx*nx*10,N)) ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+	
+	deltax = (x_Spalt[1]-x_Spalt[0])
+	fa = 1.0/deltax #Nyquist-Frequenz
+	Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
+	# zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
+	# hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
+	# unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
+	# so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehört.
+	# So wird Xf berechnet, welches jedem Intensitätswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
+	
+	index_low = np.argmax(Xf>-5.0) #Beschränke den Plot auf -5m bis +5m auf dem Screen
+	index_high = np.argmax(Xf>5.0)
+	if index_high==0:
+		index_high=len(Xf)
+	X_Schirm = Xf[index_low:index_high]
+	
+	## 1D Berechnung
+	Transmission_X = []
+	for x in x_Spalt:
+		Transmission_X.append(Transmission_n_Spalte(x,nx,ax,dx,errortype,error_array))
+	z1Df = fftshift(np.square(np.abs(fft(Transmission_X))*2/N))
+		
+	return X_Schirm, z1Df[index_low:index_high]
+	
 def fourierNspaltIntegrateAnyFunction(x,n,a,d,errortype,error_array,wl,zs):
-    # Fouriertransformierte von Transmission_Gitter
-    
-    ## bietet die Möglichkeit eine beliebige Funktion für das Gitter in 'Transmission_n_Spalte(y,n,a,d)' einzusetzen
-    
-    u = k(wl)*sin(arctan(x/zs))
-    #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-    f = lambda y:  Transmission_n_Spalte(y,n,a,d,errortype,error_array)*exp(-i()*u*y) 
+	# Fouriertransformierte von Transmission_Gitter
+	
+	## bietet die Möglichkeit eine beliebige Funktion für das Gitter in 'Transmission_n_Spalte(y,n,a,d)' einzusetzen
+	
+	u = k(wl)*sin(arctan(x/zs))
+	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
+	f = lambda y:  Transmission_n_Spalte(y,n,a,d,errortype,error_array)*exp(-i()*u*y) 
 
-    integral = complex_int(f,-(n-1)*d/2-a,(n-1)*d/2+a)
-    #scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
-    #matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
-    integral =  scipy.real(np.square(np.multiply(n,integral)))
-    return integral
+	integral = complex_int(f,-(n-1)*d/2-a,(n-1)*d/2+a)
+	#scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
+	#matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
+	integral =  scipy.real(np.square(np.multiply(n,integral)))
+	return integral
 
 
 def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
-    # Fouriertransformierte von Transmission_Einzelspalt
-    # Siehe Glg 29 im Theory doc.pdf
-    # https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
-    # ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
-    # außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
-    # für den Doppelspalt bzw. n-Spalt haben wir also
-    u = k(wl)*sin(arctan(x/zs))
-    #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-    f = lambda y:  Transmission_Einzelspalt(y,a) *exp(-i()*u*y) 
-    r = 0
-    #Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
-    #Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
-    #Fouriertransformation dieser Dirac funktion. Die Breite a dieser ganzen Spalte ist durch
-    #die Funktion f mit der Transmission eines Spaltes festgelegt.
-    #Hier ist also noch eine Verbesserung notwendig, die uns ermoeglicht unterschiedlich breite
-    #Spalte einzubauen.
+	# Fouriertransformierte von Transmission_Einzelspalt
+	# Siehe Glg 29 im Theory doc.pdf
+	# https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
+	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
+	# außerdem gilt distributivität (a+b) (*) c = a(*)c + b(*)c
+	# für den Doppelspalt bzw. n-Spalt haben wir also
+	u = k(wl)*sin(arctan(x/zs))
+	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
+	f = lambda y:  Transmission_Einzelspalt(y,a) *exp(-i()*u*y) 
+	r = 0
+	#Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
+	#Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
+	#Fouriertransformation dieser Dirac funktion. Die Breite a dieser ganzen Spalte ist durch
+	#die Funktion f mit der Transmission eines Spaltes festgelegt.
+	#Hier ist also noch eine Verbesserung notwendig, die uns ermoeglicht unterschiedlich breite
+	#Spalte einzubauen.
 
-    mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
-    for pkt in mittelpunkteDerLoecher:
-        r = r + (exp(i()*u*pkt))
+	mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
+	for pkt in mittelpunkteDerLoecher:
+		r = r + (exp(i()*u*pkt))
 
-    if(n==1):
-        r = 1
-    integral = complex_int(f,-a,a)
-    #scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
-    #matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
-    integral =  scipy.real(np.square(n * np.multiply(integral,r)))
-    return integral
+	if(n==1):
+		r = 1
+	integral = complex_int(f,-a,a)
+	#scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
+	#matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
+	integral =  scipy.real(np.square(n * np.multiply(integral,r)))
+	return integral
 
 ####__________________________________________________________________
 #### Transmissionsfunktion verschiedener Objekte
 ####__________________________________________________________________
 
 def Transmission_Einzelspalt(x,a):
-    if math.fabs(x) <= a/2:
-        return 1
-    else:
-        return 0
+	if math.fabs(x) <= a/2:
+		return 1
+	else:
+		return 0
 
 def Transmission_Lochblende(rho,R):
-    #einzelnes Loch mit Radius R
-    #Verwende Polarkoordinaten rho,theta 
-    if (rho <= R):
-        return 1
-    else: 
-        return 0
-    
+	#einzelnes Loch mit Radius R
+	#Verwende Polarkoordinaten rho,theta 
+	if (rho <= R):
+		return 1
+	else: 
+		return 0
+	
 def Transmission_Mittelpunkte(n,d):
-    mittelpunkte = []
-    i = 1
-    if (n%2) == 1:
-        mittelpunkte.append(0)
+	mittelpunkte = []
+	i = 1
+	if (n%2) == 1:
+		mittelpunkte.append(0)
 
-    while i<=n/2:
-        if (n % 2) == 0:
-            mittelpunkte.append(d*(2*i-1)/2)
-            mittelpunkte.append(-d*(2*i-1)/2)
-        else:
-            mittelpunkte.append((i)*d)
-            mittelpunkte.append(-(i)*d)
+	while i<=n/2:
+		if (n % 2) == 0:
+			mittelpunkte.append(d*(2*i-1)/2)
+			mittelpunkte.append(-d*(2*i-1)/2)
+		else:
+			mittelpunkte.append((i)*d)
+			mittelpunkte.append(-(i)*d)
 
-        i =i+1
+		i =i+1
 
-    return mittelpunkte
+	return mittelpunkte
 
 def Transmission_n_Spalte(x,n,a,d,errortype,error_array):
-        
-    if errortype==0:  ##kein Error
-        gesamttransmission = 0.
-        
-        for i in range(n):
-            gesamttransmission += Transmission_Einzelspalt(x-d*(i-n/2+0.5),a)
-    
-    elif errortype==1:
-        
-        gesamttransmission = 0.
-        for i in range(n):
-            gesamttransmission += Transmission_Einzelspalt(x+error_array[i,0]*a-d*(i-n/2+0.5),a*error_array[i,1])
-            
-    #else:
-        #errortype 2
-    
-    return gesamttransmission
+		
+	if errortype==0:  ##kein Error
+		gesamttransmission = 0.
+		
+		for i in range(n):
+			gesamttransmission += Transmission_Einzelspalt(x-d*(i-n/2+0.5),a)
+	
+	elif errortype==1:
+		
+		gesamttransmission = 0.
+		for i in range(n):
+			gesamttransmission += Transmission_Einzelspalt(x+error_array[i,0]*a-d*(i-n/2+0.5),a*error_array[i,1])
+			
+	#else:
+		#errortype 2
+	
+	return gesamttransmission
 
 def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
-    # Returns the transmission for a periodic grid as a matrix with 0/1
-    # to plot it with the contourplot-fct or use it for the fft2 algorithm
-    # error is the error of the grid which is given to the Transmission-fct
-    subArrayX=[]
-    subArrayY=[]
-    
-    ## Teile xArray an Mittelpunkten zwischen den Spalten in Teile von
-    ##     [:-(nx-2)/2*dx][-(nx-2)/2*dx:(i-(nx-2)/2*dx)][...] i in range(nx-1)
-    ## Teile yArray an Mittelpunkten zwischen den Spalten in Teile von
-    ##     [:-(ny-2)/2*dy][-(ny-2)/2*dy:(j-(ny-2)/2*dy)][...] j in range(ny-1)
-    ## Erhalte somit nx*ny Teilstücke des Gitters, in denen sich jeweils ein Spalt befindet
-    ## Integriere für jeden einzelnen Spalt separat, fülle die restlichen Gebiete des Ergebnisses mit 1
-    ## multipliziere die einzelnen Spaltfouriertransformierten um das Gesamtergebnis zu erhalten
-    Ztmp=[]
-    
-    for i in range(max(nx,1)):
-        for j in range(max(ny,1)):
-            for x in xArray:
-                if nx==0:
-                    subArrayX.append(1)
-                elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
-                    subArrayX.append(Transmission_n_Spalte(x,nx,ax,dx,errortype,error_matrix[j,:,0]))
-                else:
-                    subArrayX.append(0)
-            for y in yArray:
-                if ny==0:
-                    subArrayY.append(1)
-                elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
-                    subArrayY.append(Transmission_n_Spalte(y,ny,ay,dy,errortype,error_matrix[:,i,0]))
-                else:
-                    subArrayY.append(0)
-                    
-            XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
-            Ztmp.append(XX*YY)
-            subArrayX= []
-            subArrayY= []
-    
-    Ztotal=Ztmp[0]
-    for k in range(1,len(Ztmp)):
-        Ztotal+=Ztmp[k]
-    
-    return np.array(Ztotal)
-            
+	# Returns the transmission for a periodic grid as a matrix with 0/1
+	# to plot it with the contourplot-fct or use it for the fft2 algorithm
+	# error is the error of the grid which is given to the Transmission-fct
+	subArrayX=[]
+	subArrayY=[]
+	
+	## Teile xArray an Mittelpunkten zwischen den Spalten in Teile von
+	##     [:-(nx-2)/2*dx][-(nx-2)/2*dx:(i-(nx-2)/2*dx)][...] i in range(nx-1)
+	## Teile yArray an Mittelpunkten zwischen den Spalten in Teile von
+	##     [:-(ny-2)/2*dy][-(ny-2)/2*dy:(j-(ny-2)/2*dy)][...] j in range(ny-1)
+	## Erhalte somit nx*ny Teilstücke des Gitters, in denen sich jeweils ein Spalt befindet
+	## Integriere für jeden einzelnen Spalt separat, fülle die restlichen Gebiete des Ergebnisses mit 1
+	## multipliziere die einzelnen Spaltfouriertransformierten um das Gesamtergebnis zu erhalten
+	Ztmp=[]
+	
+	for i in range(max(nx,1)):
+		for j in range(max(ny,1)):
+			for x in xArray:
+				if nx==0:
+					subArrayX.append(1)
+				elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
+					subArrayX.append(Transmission_n_Spalte(x,nx,ax,dx,errortype,error_matrix[j,:,0]))
+				else:
+					subArrayX.append(0)
+			for y in yArray:
+				if ny==0:
+					subArrayY.append(1)
+				elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
+					subArrayY.append(Transmission_n_Spalte(y,ny,ay,dy,errortype,error_matrix[:,i,0]))
+				else:
+					subArrayY.append(0)
+					
+			XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
+			Ztmp.append(XX*YY)
+			subArrayX= []
+			subArrayY= []
+	
+	Ztotal=Ztmp[0]
+	for k in range(1,len(Ztmp)):
+		Ztotal+=Ztmp[k]
+	
+	return np.array(Ztotal)
+			
 ####__________________________________________________________________
 #### Intensitätsverteilungen für verschiedene Objekte. Ich weiß nicht, ob
 #### wir das am Ende so machen können. Für einen Einzelspalt geht es
@@ -526,29 +526,29 @@ def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 
 
 def interferenz_einzelspalt_analytisch(X,a,wl,zs):
-    alphax = arctan(X/zs)
-    return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
+	alphax = arctan(X/zs)
+	return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
 
 def interferenz_Nspalt_analytisch(X,n,a,d,wl,zs):
-    return_vec = []
-    for x in X:
-        alphax = arctan(x/zs)
-        if n==0:
-            return_vec.append(1)
-        elif x==0:
-            return_vec.append((n*a)**2)
-            #return_vec.append((a * sinc(pi*a/wl*sin(alphax)))**2)
-        elif sin(pi*d/wl*sin(alphax))==0:
-            return_vec.append((n*a*sinc(pi*a/wl*sin(alphax)))**2)
-        else:
-            return_vec.append((n*sin(pi*n*d/wl*sin(alphax))/(sin(pi*d/wl*sin(alphax))) * a * sinc(pi*a/wl*sin(alphax)))**2)
-    return return_vec
+	return_vec = []
+	for x in X:
+		alphax = arctan(x/zs)
+		if n==0:
+			return_vec.append(1)
+		elif x==0:
+			return_vec.append((n*a)**2)
+			#return_vec.append((a * sinc(pi*a/wl*sin(alphax)))**2)
+		elif sin(pi*d/wl*sin(alphax))==0:
+			return_vec.append((n*a*sinc(pi*a/wl*sin(alphax)))**2)
+		else:
+			return_vec.append((n*sin(pi*n*d/wl*sin(alphax))/(sin(pi*d/wl*sin(alphax))) * a * sinc(pi*a/wl*sin(alphax)))**2)
+	return return_vec
 
 def interferenz_Gitter_analytisch(X,Y,nx,ny,ax,ay,dx,dy,wl,zs):
-    x_arr = interferenz_Nspalt_analytisch(X,nx,ax,dx,wl,zs)
-    y_arr = interferenz_Nspalt_analytisch(Y,ny,ay,dy,wl,zs)
-    x_mat, y_mat = np.meshgrid(x_arr,y_arr)
-    return x_mat*y_mat
+	x_arr = interferenz_Nspalt_analytisch(X,nx,ax,dx,wl,zs)
+	y_arr = interferenz_Nspalt_analytisch(Y,ny,ay,dy,wl,zs)
+	x_mat, y_mat = np.meshgrid(x_arr,y_arr)
+	return x_mat*y_mat
 
 ####__________________________________________________________________
 #### Hauptfunktionen für n Spalte, Gitter, Gitter mit Fehlstelle etc..
@@ -559,138 +559,143 @@ def interferenz_Gitter_analytisch(X,Y,nx,ny,ax,ay,dx,dy,wl,zs):
 
 
 def spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs):
-    # n  : Anzahl der Spalte
-    # a  : Größe der Spalte
-    # d  : Abstand (egal für Einzelspalt)
-    
-    x1  = np.linspace(-5., 5., 1200)
-    y1  = np.linspace(-5., 5., 1200)
+	# n  : Anzahl der Spalte
+	# a  : Größe der Spalte
+	# d  : Abstand (egal für Einzelspalt)
+	
+	x1  = np.linspace(-5., 5., 1200)
+	y1  = np.linspace(-5., 5., 1200)
 
-    X,Y = np.meshgrid(x1, y1)
-    Z = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+	X,Y = np.meshgrid(x1, y1)
+	Z = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 
-    h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
-    plt.show()
-    
+	h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
+	plt.show()
+	
 def spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-    # n  : Anzahl der Spalte
-    # a  : Größe der Spalte
-    # d  : Abstand (egal für Einzelspalt)
-    
-    x1  = np.linspace(-5., 5., 1200)
-    y1  = np.linspace(-5., 5., 1200)
+	# n  : Anzahl der Spalte
+	# a  : Größe der Spalte
+	# d  : Abstand (egal für Einzelspalt)
+	
+	x1  = np.linspace(-5., 5., 1200)
+	y1  = np.linspace(-5., 5., 1200)
 
-    X,Y = np.meshgrid(x1, y1)
-    Z = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-    
-    h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
-    plt.show()
+	X,Y = np.meshgrid(x1, y1)
+	Z = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	
+	h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
+	plt.show()
 
 def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-    # n  : Anzahl der Spalte
-    # a  : Größe der Spalte
-    # d  : Abstand (egal für Einzelspalt)
-    start_time = time.time()
-    
-    d=max(dx,dy)
-    n=max(nx,ny)
-    a=max(ax,ay)
-    x_Spalt = np.array(np.linspace(-n*d/2,n*d/2,1200))
-    y_Spalt = np.array(np.linspace(-n*d/2,n*d/2,1200))
-    
-    X_mat_Spalt, Y_mat_Spalt = np.meshgrid(x_Spalt,y_Spalt)
-    
-    z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,0,error_matrix)
-    z2 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
-    
-    x1  = np.linspace(-5., 5., 1200)
-    y1  = np.linspace(-5., 5., 1200)
-    
-    X,Y = np.meshgrid(x1, y1)
+	# n  : Anzahl der Spalte
+	# a  : Größe der Spalte
+	# d  : Abstand (egal für Einzelspalt)
+	start_time = time.time()
+	
+	d=max(dx,dy)
+	n=max(nx,ny)
+	a=max(ax,ay)
+	x_Spalt = np.array(np.linspace(-n*d/2,n*d/2,1200))
+	y_Spalt = np.array(np.linspace(-n*d/2,n*d/2,1200))
+	
+	X_mat_Spalt, Y_mat_Spalt = np.meshgrid(x_Spalt,y_Spalt)
+	
+	z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,0,error_matrix)
+	z2 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
+	
+	x1  = np.linspace(-5., 5., 1200)
+	y1  = np.linspace(-5., 5., 1200)
+	
+	X,Y = np.meshgrid(x1, y1)
 
-    z4 = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-    z4 /= np.nanmax(z4) #normalization
-    XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-    z2Df /= np.nanmax(z2Df)
-    
-    print("Berechnungen dauerten: " + str(time.time() - start_time))
-    ## Farbstufen für das Bild
-    levels_z4 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
-    cmap_lin = plt.cm.Reds
-    cmap_nonlin_z4 = nlcmap(cmap_lin, levels_z4)
+	z4 = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+	z4 /= np.nanmax(z4) #normalization
+	print("Analytische Berechnungen dauerten: " + str(time.time() - start_time))
 
-    fig, ax = plt.subplots(nrows=2, ncols=2)
-    
-    plt.subplot(2,2,1)
-    f = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z1, cmap='gray')
-    
-    plt.subplot(2,2,2)
-    g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2, cmap='gray')
-    
-    plt.subplot(2,2,3)
-    h = plt.contourf(X,Y,z4,levels=levels_z4,cmap=cmap_nonlin_z4)
-    plt.subplot(2,2,3).set_title("analytisch")
-    plt.colorbar()
-            
-    plt.subplot(2,2,4)
-    l = plt.contourf(XX,YY,z2Df,levels=levels_z4,cmap=cmap_nonlin_z4)
-    plt.subplot(2,2,4).set_title("fft")
-    plt.colorbar()
-        
-    plt.show()
+	start_time = time.time()
 
-    print("Berechnungen und Plot dauerten: " + str(time.time() - start_time))
-    
+	XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	z2Df /= np.nanmax(z2Df)
+	
+	print("FFT Berechnungen dauerten: " + str(time.time() - start_time))
+	start_time = time.time()
+
+	## Farbstufen für das Bild
+	levels_z4 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
+	cmap_lin = plt.cm.Reds
+	cmap_nonlin_z4 = nlcmap(cmap_lin, levels_z4)
+
+	fig, ax = plt.subplots(nrows=2, ncols=2)
+	
+	plt.subplot(2,2,1)
+	f = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z1, cmap='gray')
+	
+	plt.subplot(2,2,2)
+	g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2, cmap='gray')
+	
+	plt.subplot(2,2,3)
+	h = plt.contourf(X,Y,z4,levels=levels_z4,cmap=cmap_nonlin_z4)
+	plt.subplot(2,2,3).set_title("analytisch")
+	plt.colorbar()
+			
+	plt.subplot(2,2,4)
+	l = plt.contourf(XX,YY,z2Df,levels=levels_z4,cmap=cmap_nonlin_z4)
+	plt.subplot(2,2,4).set_title("fft")
+	plt.colorbar()
+		
+	plt.show()
+	print("Plot Berechnungen dauerten: " + str(time.time() - start_time))
+	
 def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-    # n  : Anzahl der Spalte
-    # a  : Größe der Spalte
-    # d  : Abstand (egal für Einzelspalt)
-    start_time = time.time()
-    
-    x1  = np.linspace(-5., 5., 1200)
-    y1  = np.linspace(-5., 5., 1200)
-    
-    X,Y = np.meshgrid(x1, y1)
+	# n  : Anzahl der Spalte
+	# a  : Größe der Spalte
+	# d  : Abstand (egal für Einzelspalt)
+	start_time = time.time()
+	
+	x1  = np.linspace(-5., 5., 1200)
+	y1  = np.linspace(-5., 5., 1200)
+	
+	X,Y = np.meshgrid(x1, y1)
 
-    #Berechnung dft
-    z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-    z1 /= z1.max()
-    
-    ## Berechnung analytisch
-    z2 = interferenz_Nspalt_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-    z2 /= z2.max()
-    
-    #Berechnung fft 2D
-    XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-    z2Df/=z2Df.max()
-    
-    print("Berechnungen dauerten: " + str(time.time() - start_time))
-    
-    ## Farbstufen für das Bild
-    levels_z1 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
-    cmap_lin = plt.cm.Reds
-    cmap_nonlin_z1 = nlcmap(cmap_lin, levels_z1)
-    
-    fig, ax = plt.subplots(nrows=1, ncols=3)
-    
-    plt.subplot(1,3,1)
-    g = plt.contourf(x1,y1,z1,levels=levels_z1,cmap=cmap_nonlin_z1)
-    plt.subplot(1,3,1).set_title("dft ohne Gitterfehler")
-    plt.colorbar()
-    
-    plt.subplot(1,3,2)
-    f = plt.contourf(x1,y1,z2,levels=levels_z1,cmap=cmap_nonlin_z1)
-    plt.subplot(1,3,2).set_title("analytisch")
-    plt.colorbar()
-    
-    plt.subplot(1,3,3)    
-    h = plt.contourf(XX,YY,z2Df,levels=levels_z1,cmap=cmap_nonlin_z1)
-    plt.subplot(1,3,3).set_title(fft)
-    plt.colorbar()
-          
-    plt.show()
-    
-    print("Berechnungen und Plot dauerten: " + str(time.time() - start_time))
+	#Berechnung dft
+	z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	z1 /= z1.max()
+	
+	## Berechnung analytisch
+	z2 = interferenz_Nspalt_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+	z2 /= z2.max()
+	
+	#Berechnung fft 2D
+	XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	z2Df/=z2Df.max()
+	
+	print("Berechnungen dauerten: " + str(time.time() - start_time))
+	
+	## Farbstufen für das Bild
+	levels_z1 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
+	cmap_lin = plt.cm.Reds
+	cmap_nonlin_z1 = nlcmap(cmap_lin, levels_z1)
+	
+	fig, ax = plt.subplots(nrows=1, ncols=3)
+	
+	plt.subplot(1,3,1)
+	g = plt.contourf(x1,y1,z1,levels=levels_z1,cmap=cmap_nonlin_z1)
+	plt.subplot(1,3,1).set_title("dft ohne Gitterfehler")
+	plt.colorbar()
+	
+	plt.subplot(1,3,2)
+	f = plt.contourf(x1,y1,z2,levels=levels_z1,cmap=cmap_nonlin_z1)
+	plt.subplot(1,3,2).set_title("analytisch")
+	plt.colorbar()
+	
+	plt.subplot(1,3,3)    
+	h = plt.contourf(XX,YY,z2Df,levels=levels_z1,cmap=cmap_nonlin_z1)
+	plt.subplot(1,3,3).set_title(fft)
+	plt.colorbar()
+		  
+	plt.show()
+	
+	print("Berechnungen und Plot dauerten: " + str(time.time() - start_time))
 	
 if __name__ == "__main__":
 	main()
