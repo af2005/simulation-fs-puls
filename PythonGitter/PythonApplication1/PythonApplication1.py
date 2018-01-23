@@ -22,6 +22,7 @@ from numpy.fft import fft2 as fft2
 from numpy import pi as pi
 
 from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.gridspec as gridspec
 from pylab import *
  
 
@@ -34,6 +35,9 @@ import random
 
 import matplotlib.pyplot as plt
 import argparse
+
+#Canvas
+from tkinter import *
 
 ## zur Darstellung der Intensität verwenden wir einen nicht-linearen Farbverlauf nach 
 ## https://stackoverflow.com/questions/33873397/nonlinear-colormap-with-matplotlib
@@ -72,6 +76,7 @@ def main():
 	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--abstand', dest='zs', help='Schirmabstand in cm',default=350)
+	parser.add_argument('--custom', dest='custom',help='Setze auf 1 um eine Leinwand zu haben und ein Beugungsmuster eines beliebigen Objekts zu bekommen',default=0 )
 	
 
 
@@ -117,6 +122,7 @@ def main():
 	errortype = int(args.errortype)
 	wl = int(args.wl) * 1e-9
 	zs = int(args.zs) * 1e-2
+	custom = int(args.custom)
 	
 	
 	matplotlib.rcParams.update({'font.size': 30}) ## change font size
@@ -126,51 +132,102 @@ def main():
 		print('Ohne Gitter gibt es keine Berechnung...')
 		sys.exit(0)
 
-	#__________________________________________________________________
-	# Mehrere Gitter / Wellenlängen Überlagerung
-	
-	'''
-	sehr gute Ideen was wir machen können! Ich kommentiere die nur  erstmal aus,
-	 sodass ich mit einer festen Wellenlänge und einem Gitter anfangen kann und nicht von den Fragen
-	 genervt werde ;) Alle Parameter werden oben als Argument definiert, sodass ich die nicht immer 
-	 eingeben muss. Siehe default value.
 
-	i = int(input("Wie viele Wellenlängen sollen in der Welle überlagert sein? "))
+	if custom == 1:
+		#baue canvas
 
-	if i >= 1:
-		counter = 1
-		wl = list()
-		while counter <= i:
-			wltemp = float(input("Wellenlänge in nm? ")) # Lambda in nm
-			wl.append(wl)
-			counter += 1
-	else: 
-		wl = float(input("Wellenlänge in nm? ")) # Lambda in nm
+		canvas_size = 200
+		canvas_width = canvas_size
+		canvas_height = canvas_size
+		imagearray =  [[ 0 for xcoord in range( canvas_size ) ] for ycoord in range( canvas_size ) ]
 
-	
+		def getNeightbourPixels(x0,y0,radius):
+			#gets all neightbouring pixels within a certain distance
+			x0 = int(x0)
+			y0 = int(y0)
+			radius = int(radius)
 
-	N = int(input("Anzahl der Gitter? "))
-	alpha = float(input("Einfallswinkel? "))
+			def abstand(x0,y0,x,y):
+				return math.floor(math.sqrt((x-x0)**2 + (y-y0)**2))
+			tempx = x0-radius
+			tempy = y0-radius
 
-	
-	zs = 0
-	while a*10 >= zs:
-		zs = float(input("Abstand des Schirms in cm? "))
-	'''
+			while (tempx >= x0-radius) and (tempx <= x0+radius):
+				while (tempy >= y0-radius) and (tempy <= x0+radius):
+					if abstand(x0,y0,tempx,tempy) <= radius:
+						imagearray[tempx][tempy] = 1
+					tempy = tempy +1
+				tempx = tempx + 1	
 
-	error_matrix = []
-	for i in range(ny):
-		error_row=[]
-		for j in range(nx):
-			error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
-		error_matrix.append(error_row)
-	error_matrix = np.array(error_matrix)
 
-	#comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-	#spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs)
-	#spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-	comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-	
+		def paint( event ):
+		   draw_color = "#FFFFFF"
+		   radius = 20
+		   x1, y1 = ( event.x - radius ), ( event.y - radius)
+		   x2, y2 = ( event.x + radius ), ( event.y + radius)
+		   getNeightbourPixels(event.x,event.y,radius)
+		   w.create_oval( x1, y1, x2, y2, fill = draw_color, outline=draw_color )
+
+		master = Tk()
+		master.title( "Beugungsmuster" )
+		w = Canvas(master, 
+		           width=canvas_width, 
+		           height=canvas_height,
+		           bg="#000000")
+		w.pack(expand = NO, fill = BOTH)
+		w.bind("<B1-Motion>", paint)
+
+		message = Label( master, text = "Press and Drag the mouse to draw" )
+		message.pack( side = BOTTOM )
+		    
+		mainloop()
+		print(imagearray)
+	else:
+			#__________________________________________________________________
+		# Mehrere Gitter / Wellenlängen Überlagerung
+		
+		'''
+		sehr gute Ideen was wir machen können! Ich kommentiere die nur  erstmal aus,
+		 sodass ich mit einer festen Wellenlänge und einem Gitter anfangen kann und nicht von den Fragen
+		 genervt werde ;) Alle Parameter werden oben als Argument definiert, sodass ich die nicht immer 
+		 eingeben muss. Siehe default value.
+
+		i = int(input("Wie viele Wellenlängen sollen in der Welle überlagert sein? "))
+
+		if i >= 1:
+			counter = 1
+			wl = list()
+			while counter <= i:
+				wltemp = float(input("Wellenlänge in nm? ")) # Lambda in nm
+				wl.append(wl)
+				counter += 1
+		else: 
+			wl = float(input("Wellenlänge in nm? ")) # Lambda in nm
+
+		
+
+		N = int(input("Anzahl der Gitter? "))
+		alpha = float(input("Einfallswinkel? "))
+
+		
+		zs = 0
+		while a*10 >= zs:
+			zs = float(input("Abstand des Schirms in cm? "))
+		'''
+
+		error_matrix = []
+		for i in range(ny):
+			error_row=[]
+			for j in range(nx):
+				error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
+			error_matrix.append(error_row)
+		error_matrix = np.array(error_matrix)
+
+		#comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+		#spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs)
+		#spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+		comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+		
 	#__________________________________________________________________
 	# Ende der main()
 
@@ -628,22 +685,22 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	cmap_lin = plt.cm.Reds
 	cmap_nonlin_z4 = nlcmap(cmap_lin, levels_z4)
 
-	fig, ax = plt.subplots(nrows=2, ncols=2)
-	
-	plt.subplot(2,2,1)
+	#fig, ax = plt.subplots(nrows=2, ncols=2)
+	gs = gridspec.GridSpec(2, 2, height_ratios=[1, 3]) 
+	plt.subplot(gs[0, 0])
 	f = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z1, cmap='gray')
 	
-	plt.subplot(2,2,2)
+	plt.subplot(gs[0, 1])
 	g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2, cmap='gray')
 	
-	plt.subplot(2,2,3)
+	plt.subplot(gs[1, 0])
 	h = plt.contourf(X,Y,z4,levels=levels_z4,cmap=cmap_nonlin_z4)
-	plt.subplot(2,2,3).set_title("analytisch")
+	plt.subplot(gs[1, 0]).set_title("analytisch")
 	plt.colorbar()
 			
-	plt.subplot(2,2,4)
+	plt.subplot(gs[1, 1])
 	l = plt.contourf(XX,YY,z2Df,levels=levels_z4,cmap=cmap_nonlin_z4)
-	plt.subplot(2,2,4).set_title("fft")
+	plt.subplot(gs[1, 1]).set_title("fft")
 	plt.colorbar()
 		
 	plt.show()
@@ -667,12 +724,15 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	## Berechnung analytisch
 	z2 = interferenz_Nspalt_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 	z2 /= z2.max()
+	print("Analytische Berechnungen dauerten: " + str(time.time() - start_time))
+	start_time = time.time()
 	
 	#Berechnung fft 2D
 	XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
 	z2Df/=z2Df.max()
 	
-	print("Berechnungen dauerten: " + str(time.time() - start_time))
+	print("FFT Berechnungen dauerten: " + str(time.time() - start_time))
+	start_time = time.time()
 	
 	## Farbstufen für das Bild
 	levels_z1 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
@@ -693,12 +753,13 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	
 	plt.subplot(1,3,3)    
 	h = plt.contourf(XX,YY,z2Df,levels=levels_z1,cmap=cmap_nonlin_z1)
-	plt.subplot(1,3,3).set_title(fft)
+	plt.subplot(1,3,3).set_title("fft")
 	plt.colorbar()
+
+	print("Plot Berechung dauerte: " + str(time.time() - start_time))
 		  
 	plt.show()
 	
-	print("Berechnungen und Plot dauerten: " + str(time.time() - start_time))
 	
 if __name__ == "__main__":
 	main()
