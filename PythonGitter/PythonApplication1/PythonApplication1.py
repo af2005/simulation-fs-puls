@@ -298,50 +298,53 @@ def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
 
 
 def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimmt, Skalierung noch nicht
-    d = max(dx,dy)
-    n = max(nx,ny)
-    a = max(ax,ay)
-    datapoints = kgV_arr([int(d*1e6*20*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-    while(datapoints*wl/4/n/d/100<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
-        datapoints*=2                                   ## 0.82 für Plot bis +-5m
-    print(datapoints)
-    N = datapoints+1                                    ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
-    x_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-    y_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-    
-    deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich
-    fa = 1.0/deltax #Nyquist-Frequenz
-    Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
-    # zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
-    # hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
-    # unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
-    # so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehört.
-    # So wird Xf berechnet, welches jedem Intensitätswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
-    Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
-    
-    index_low =  np.argmax(Xf>-5.0) #Beschränke den Plot auf -5m bis +5m auf dem Screen
-    index_high = np.argmax(Xf>5.0)
-    if index_high==0:
-        index_high = len(Xf)
-    X_Schirm, Y_Schirm = np.meshgrid(Xf[index_low:index_high],Yf[index_low:index_high])
+        
     
     if nx==0:  ## then only integrate in y-direction
         Schirm, z1Dfy = fftNspalt1D_XZ(ny,ay,dy,errortype,error_matrix[:,0,1],wl,zs) ## error_matrix[:,0,1] is the array of the error-values in y-direction
-        z1Df_X, z1Df_Y = np.meshgrid(np.ones(index_high-index_low),z1Dfy)
+        z1Df_X, z1Df_Y = np.meshgrid(np.ones(len(z1Dfy)),z1Dfy)
         z2Df = z1Df_X * z1Df_Y
+        X_Schirm, Y_Schirm = np.meshgrid(Schirm,Schirm)
     elif ny==0: ## then only integrate in x-direction
         Schirm, z1Dfx = fftNspalt1D_XZ(nx,ax,dx,errortype,error_matrix[0,:,0],wl,zs) ## error_matrix[0,:,0] is the array of the error-values in x-direction
-        z1Df_X, z1Df_Y = np.meshgrid(z1Dfx,np.ones(index_high-index_low))
+        z1Df_X, z1Df_Y = np.meshgrid(z1Dfx,np.ones(len(z1Dfx)))
         z2Df = z1Df_X * z1Df_Y
+        X_Schirm, Y_Schirm = np.meshgrid(Schirm,Schirm)
     else:
         ## 2D Berechnung
+        d = max(dx,dy)
+        n = max(nx,ny)
+        a = max(ax,ay)
+        datapoints = kgV_arr([int(d*1e6*20*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
+        while(datapoints*wl/4/n/d/10<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+            datapoints*=2                                   ## 0.82 für Plot bis +-5m
+        N = datapoints+1                                    ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+        x_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+        y_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+
+        deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich
+        fa = 1.0/deltax #Nyquist-Frequenz
+        Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
+        # zurückgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
+        # hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
+        # unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
+        # so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehört.
+        # So wird Xf berechnet, welches jedem Intensitätswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
+        Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
+
+        index_low =  np.argmax(Xf>-5.0) #Beschränke den Plot auf -5m bis +5m auf dem Screen
+        index_high = np.argmax(Xf>5.0)
+        if index_high==0:
+            index_high = len(Xf)
+        X_Schirm, Y_Schirm = np.meshgrid(Xf[index_low:index_high],Yf[index_low:index_high])
+        
         z2D = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
         z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
     return X_Schirm, Y_Schirm, z2Df
 
 def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs):
     datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-    while(datapoints*wl/4/nx/dx/100<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+    while(datapoints*wl/4/nx/dx/10<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
         datapoints*=2                                     ## 0.82 für Plot bis +-5m
     N = datapoints+1                                      ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
     
@@ -608,7 +611,6 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     z4 /= np.nanmax(z4) #normalization
     XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     z2Df /= np.nanmax(z2Df)
-    print(len(z2Df))
     
     ## Farbstufen für das Bild
     levels_z4 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
