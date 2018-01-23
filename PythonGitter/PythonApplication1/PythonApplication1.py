@@ -206,6 +206,8 @@ def main():
 		plt.figure()
 		plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
 		plt.colorbar()
+		
+		plt.show()
 	else:
 			#__________________________________________________________________
 		# Mehrere Gitter / Wellenlängen Überlagerung
@@ -409,9 +411,9 @@ def fftCanvas2D_XYZ(imagearray,wl,zs):
 	index_high = np.argmax(Xf>5.0)
 	if index_high==0:
 		index_high = len(Xf)
-	X_Schirm, Y_Schirm = np.meshgrid(Xf[index_low:index_high],Yf[index_low:index_high])
+	X_Schirm, Y_Schirm = np.meshgrid(Xf,Yf)#[index_low:index_high],Yf[index_low:index_high])
 	
-	z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
+	z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N)) #[index_low:index_high,index_low:index_high]
 	return X_Schirm, Y_Schirm, z2Df
 
 
