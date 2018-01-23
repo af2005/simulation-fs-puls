@@ -263,37 +263,29 @@ def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
     subArrayX= []
     subArrayY= []
     
-    ## Teile xArray an Mittelpunkten zwischen den Spalten in Teile von
-    ##     [:-(nx-2)/2*dx][-(nx-2)/2*dx:(i-(nx-2)/2*dx)][...] i in range(nx-1)
-    ## Teile yArray an Mittelpunkten zwischen den Spalten in Teile von
-    ##     [:-(ny-2)/2*dy][-(ny-2)/2*dy:(j-(ny-2)/2*dy)][...] j in range(ny-1)
-    ## Erhalte somit nx*ny Teilstücke des Gitters, in denen sich jeweils ein Spalt befindet
-    ## Integriere für jeden einzelnen Spalt separat, fülle die restlichen Gebiete des Ergebnisses mit 1
-    ## multipliziere die einzelnen Spaltfouriertransformierten um das Gesamtergebnis zu erhalten
+    ## Im Gegensatz zur fft wird hier die Aufteilung der Integration zum Problem:
+    ## so lassen sich nicht beliebige Fehler im Gitter berechnen, sondern die Fehler
+    ## müssen symmetrisch in x-Richtung bzw y-Richtung sein.
+    ## Um dies zu realisieren, werden jeweils einfach die 1. Zeile/Spalte der
+    ## Fehlermatrix übergeben, sodass diese Bedingung erfüllt ist.
     Ztmp=[]
     
-    for i in range(nx):
-        for j in range(ny):
-            for x in xArray:
-                if nx==0:
-                    subArrayX.append(1)
-                elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
-                    subArrayX.append(float(fourierNspaltIntegrateAnyFunction(x,nx,ax,dx,errortype,error_matrix[j,:,0],wl,zs)))
-                else:
-                    subArrayX.append(0)
-            
-            for y in yArray:
-                if ny==0:
-                    subArrayY.append(1)
-                elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
-                    subArrayY.append(float(fourierNspaltIntegrateAnyFunction(y,ny,ay,dy,errortype,error_matrix[:,i,1],wl,zs)))
-                else:
-                    subArrayY.append(0)
-                    
-            XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
-            Ztmp.append(XX*YY)
-            subArrayX= []
-            subArrayY= []
+    for x in xArray:
+        if nx==0:
+            subArrayX.append(1)
+        else:
+            subArrayX.append(float(fourierNspaltIntegrateAnyFunction(x,nx,ax,dx,errortype,error_matrix[0,:,0],wl,zs)))
+
+    for y in yArray:
+        if ny==0:
+            subArrayY.append(1)
+        else:
+            subArrayY.append(float(fourierNspaltIntegrateAnyFunction(y,ny,ay,dy,errortype,error_matrix[:,0,1],wl,zs)))
+        
+    XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
+    Ztmp.append(XX*YY)
+    subArrayX= []
+    subArrayY= []
     
     Ztotal=Ztmp[0]
     for k in range(1,len(Ztmp)):
@@ -412,6 +404,7 @@ def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
     #Spalte einzubauen.
 
     mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
+    #print(mittelpunkteDerLoecher)
     for pkt in mittelpunkteDerLoecher:
         r = r + (exp(i()*u*pkt))
 
@@ -664,7 +657,7 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     X,Y = np.meshgrid(x1, y1)
 
     #Berechnung dft
-    z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z1 = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     z1 /= z1.max()
     time_dft = time.time()
     print("Berechnung dft dauerte: " + str(time_dft - start_time))
