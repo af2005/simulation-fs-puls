@@ -182,7 +182,7 @@ def main():
 		    
 		mainloop()
 		print(imagearray)
-		X,Y,Z = fftCanvas2D_XYZ(imagearray)
+		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray))
 		
 		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
 		cmap_lin = plt.cm.Reds
