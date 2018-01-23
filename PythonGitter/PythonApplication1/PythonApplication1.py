@@ -149,7 +149,7 @@ def main():
 			y0 = int(y0)
 			newdrawradius = drawradius + 10
 			def abstand(x0,y0,x,y):
-				return math.ceil(math.sqrt((x-x0)**2 + (y-y0)**2))
+				return math.trunk(math.sqrt((x-x0)**2 + (y-y0)**2))
 			tempx = x0-newdrawradius
 			tempy = y0-newdrawradius
 
@@ -198,6 +198,7 @@ def main():
 			print(rowcontent)
 		'''
 		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs)
+		Z /= np.nanmax(Z)
 		
 		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
 		cmap_lin = plt.cm.Reds
