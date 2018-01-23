@@ -136,8 +136,8 @@ def main():
 	if custom == 1:
 		#baue canvas
 
-		canvas_size = 200
-		drawradius = 20
+		canvas_size = 500
+		drawradius = 10
 
 		imagearray =  [[ 0 for xcoord in range( canvas_size ) ] for ycoord in range( canvas_size ) ]
 
@@ -147,7 +147,7 @@ def main():
 			#gets all neightbouring pixels within a certain distance
 			x0 = int(x0)
 			y0 = int(y0)
-			newdrawradius = drawradius + 1
+			newdrawradius = drawradius
 			def abstand(x0,y0,x,y):
 				return math.trunc(math.sqrt((x-x0)**2 + (y-y0)**2))
 			tempx = x0-newdrawradius
@@ -172,11 +172,12 @@ def main():
 
 
 		def paint( event ):
-		   draw_color = "#FFFFFF"
-		   x1, y1 = ( event.x - drawradius ), ( event.y - drawradius)
-		   x2, y2 = ( event.x + drawradius ), ( event.y + drawradius)
-		   getNeightbourPixels(event.x,event.y)
-		   w.create_oval( x1, y1, x2, y2, fill = draw_color, outline=draw_color )
+			draw_color = "#FFFFFF"
+			x1, y1 = ( event.x - drawradius ), ( event.y - drawradius)
+			x2, y2 = ( event.x + drawradius ), ( event.y + drawradius)
+			getNeightbourPixels(event.x,event.y)
+			w.create_oval( x1, y1, x2, y2, fill = draw_color, outline=draw_color )
+
 
 		master = Tk()
 		master.title( "Beugungsmuster" )
@@ -189,19 +190,25 @@ def main():
 
 		message = Label( master, text = "Press and Drag the mouse to draw" )
 		message.pack( side = BOTTOM )
-			
-		mainloop()
+		mainloop()	
 		
+		'''
 		for row in imagearray:
 			rowcontent = ""
 			for entry in row:
 				rowcontent += str(entry)
 			print(rowcontent)
-		X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2*1e-7,trans.shape[1]/2*1e-7,trans.shape[1]), np.linspace(-trans.shape[0]/2*1e-7,trans.shape[0]/2*1e-7,trans.shape[0]))
-		trans=np.array(imagearray)
-		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs)
-		Z /= np.nanmax(Z)
+		'''
 		
+	
+
+		#start plot
+			
+		trans=np.array(imagearray)
+		X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2*1e-3,trans.shape[1]/2*1e-3,trans.shape[1]), np.linspace(-trans.shape[0]/2*1e-3,trans.shape[0]/2*1e-3,trans.shape[0]))
+		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
+		Z /= np.nanmax(Z)
+
 		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
 		cmap_lin = plt.cm.Reds
 		cmap_nonlin_Z = nlcmap(cmap_lin, levels_Z)
@@ -215,7 +222,9 @@ def main():
 		plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
 		plt.colorbar()
 				
-		plt.show()
+		plt.show()	
+		#end plot
+
 	else:
 			#__________________________________________________________________
 		# Mehrere Gitter / Wellenlängen Überlagerung
