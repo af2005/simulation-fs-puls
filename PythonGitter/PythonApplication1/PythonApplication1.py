@@ -137,42 +137,51 @@ def main():
 		#baue canvas
 
 		canvas_size = 200
-		canvas_width = canvas_size
-		canvas_height = canvas_size
+		drawradius = 20
+
 		imagearray =  [[ 0 for xcoord in range( canvas_size ) ] for ycoord in range( canvas_size ) ]
 
-		def getNeightbourPixels(x0,y0,radius):
+
+
+		def getNeightbourPixels(x0,y0):
 			#gets all neightbouring pixels within a certain distance
 			x0 = int(x0)
 			y0 = int(y0)
-			radius = int(radius)
-
+			newdrawradius = drawradius + 10
 			def abstand(x0,y0,x,y):
-				return math.floor(math.sqrt((x-x0)**2 + (y-y0)**2))
-			tempx = x0-radius
-			tempy = y0-radius
+				return math.ceil(math.sqrt((x-x0)**2 + (y-y0)**2))
+			tempx = x0-newdrawradius
+			tempy = y0-newdrawradius
 
-			while (tempx >= x0-radius) and (tempx <= x0+radius):
-				while (tempy >= y0-radius) and (tempy <= x0+radius):
-					if abstand(x0,y0,tempx,tempy) <= radius:
+			if tempx < 0 :
+				tempx = 0
+			if tempy < 0:
+				tempy = 0
+
+			while (tempx < x0+newdrawradius) and tempx < canvas_size:
+				while (tempy < y0+newdrawradius) and tempy < canvas_size:
+					if (abstand(x0,y0,tempx,tempy) <= newdrawradius):
 						imagearray[tempx][tempy] = 1
-					tempy = tempy +1
+					tempy = tempy+1
 				tempx = tempx + 1	
+
+			#print("durchlaufx" + str(durchlaufx))
+			#print("durchlaufy" + str(durchlaufy))
+
 
 
 		def paint( event ):
 		   draw_color = "#FFFFFF"
-		   radius = 20
-		   x1, y1 = ( event.x - radius ), ( event.y - radius)
-		   x2, y2 = ( event.x + radius ), ( event.y + radius)
-		   getNeightbourPixels(event.x,event.y,radius)
+		   x1, y1 = ( event.x - drawradius ), ( event.y - drawradius)
+		   x2, y2 = ( event.x + drawradius ), ( event.y + drawradius)
+		   getNeightbourPixels(event.x,event.y)
 		   w.create_oval( x1, y1, x2, y2, fill = draw_color, outline=draw_color )
 
 		master = Tk()
 		master.title( "Beugungsmuster" )
 		w = Canvas(master, 
-		           width=canvas_width, 
-		           height=canvas_height,
+		           width=canvas_size, 
+		           height=canvas_size,
 		           bg="#000000")
 		w.pack(expand = NO, fill = BOTH)
 		w.bind("<B1-Motion>", paint)
@@ -181,7 +190,12 @@ def main():
 		message.pack( side = BOTTOM )
 		    
 		mainloop()
-		print(imagearray)
+		for row in imagearray:
+			rowcontent = ""
+			for entry in row:
+				rowcontent += str(entry)
+			print(rowcontent)
+
 		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray))
 		
 		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
