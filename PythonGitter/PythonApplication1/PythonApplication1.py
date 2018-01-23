@@ -178,6 +178,28 @@ def main():
 			getNeightbourPixels(event.x,event.y)
 			w.create_oval( x1, y1, x2, y2, fill = draw_color, outline=draw_color )
 
+		def drawPlot(event):
+
+			trans=np.array(imagearray)
+			X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2*1e-3,trans.shape[1]/2*1e-3,trans.shape[1]), np.linspace(-trans.shape[0]/2*1e-3,trans.shape[0]/2*1e-3,trans.shape[0]))
+			X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
+			Z /= np.nanmax(Z)
+
+			levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
+			cmap_lin = plt.cm.Reds
+			cmap_nonlin_Z = nlcmap(cmap_lin, levels_Z)
+			
+			fig, ax = plt.subplots(nrows=1, ncols=2)
+		
+			plt.subplot(1,2,1)
+			plt.contourf(X_trans,Y_trans,trans,cmap='gray')
+			
+			plt.subplot(1,2,2)
+			plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
+			plt.colorbar()
+					
+			plt.show()	
+			#end plot
 
 		master = Tk()
 		master.title( "Beugungsmuster" )
@@ -187,6 +209,7 @@ def main():
 				   bg="#000000")
 		w.pack(expand = NO, fill = BOTH)
 		w.bind("<B1-Motion>", paint)
+		w.bind("<ButtonRelease-1>",drawPlot)
 
 		message = Label( master, text = "Press and Drag the mouse to draw" )
 		message.pack( side = BOTTOM )
@@ -202,28 +225,6 @@ def main():
 		
 	
 
-		#start plot
-			
-		trans=np.array(imagearray)
-		X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2*1e-3,trans.shape[1]/2*1e-3,trans.shape[1]), np.linspace(-trans.shape[0]/2*1e-3,trans.shape[0]/2*1e-3,trans.shape[0]))
-		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
-		Z /= np.nanmax(Z)
-
-		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
-		cmap_lin = plt.cm.Reds
-		cmap_nonlin_Z = nlcmap(cmap_lin, levels_Z)
-		
-		fig, ax = plt.subplots(nrows=1, ncols=2)
-	
-		plt.subplot(1,2,1)
-		plt.contourf(X_trans,Y_trans,trans,cmap='gray')
-		
-		plt.subplot(1,2,2)
-		plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
-		plt.colorbar()
-				
-		plt.show()	
-		#end plot
 
 	else:
 			#__________________________________________________________________
