@@ -147,9 +147,9 @@ def main():
 			#gets all neightbouring pixels within a certain distance
 			x0 = int(x0)
 			y0 = int(y0)
-			newdrawradius = drawradius + 10
+			newdrawradius = drawradius + 1
 			def abstand(x0,y0,x,y):
-				return math.trunk(math.sqrt((x-x0)**2 + (y-y0)**2))
+				return math.trunc(math.sqrt((x-x0)**2 + (y-y0)**2))
 			tempx = x0-newdrawradius
 			tempy = y0-newdrawradius
 
@@ -158,10 +158,11 @@ def main():
 			if tempy < 0:
 				tempy = 0
 
-			while (tempx < x0+newdrawradius) and tempx < canvas_size:
+			while tempx < canvas_size:
+				tempy = y0-newdrawradius
 				while (tempy < y0+newdrawradius) and tempy < canvas_size:
 					if (abstand(x0,y0,tempx,tempy) <= newdrawradius):
-						imagearray[tempx][tempy] = 1
+						imagearray[tempy][tempx] = 1
 					tempy = tempy+1
 				tempx = tempx + 1	
 
@@ -190,13 +191,13 @@ def main():
 		message.pack( side = BOTTOM )
 			
 		mainloop()
-		'''
+		
 		for row in imagearray:
 			rowcontent = ""
 			for entry in row:
 				rowcontent += str(entry)
 			print(rowcontent)
-		'''
+	
 		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs)
 		Z /= np.nanmax(Z)
 		
