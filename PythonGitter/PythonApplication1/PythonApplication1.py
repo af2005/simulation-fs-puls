@@ -180,23 +180,24 @@ def main():
 		master = Tk()
 		master.title( "Beugungsmuster" )
 		w = Canvas(master, 
-		           width=canvas_size, 
-		           height=canvas_size,
-		           bg="#000000")
+				   width=canvas_size, 
+				   height=canvas_size,
+				   bg="#000000")
 		w.pack(expand = NO, fill = BOTH)
 		w.bind("<B1-Motion>", paint)
 
 		message = Label( master, text = "Press and Drag the mouse to draw" )
 		message.pack( side = BOTTOM )
-		    
+			
 		mainloop()
+		'''
 		for row in imagearray:
 			rowcontent = ""
 			for entry in row:
 				rowcontent += str(entry)
 			print(rowcontent)
-
-		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray))
+		'''
+		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs)
 		
 		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
 		cmap_lin = plt.cm.Reds
@@ -380,7 +381,7 @@ def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
 		Ztotal+=Ztmp[k]
 	return Ztotal
 
-def fftCanvas2D_XYZ(imagearray):
+def fftCanvas2D_XYZ(imagearray,wl,zs):
 	## 2D Berechnung
 	d = 1e-6
 	n = 1
@@ -390,9 +391,9 @@ def fftCanvas2D_XYZ(imagearray):
 	y_Spalt = np.array(np.linspace(-d*10,d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
 	
 	z2D = np.hstack((np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2))), imagearray,
-                     np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2)))))
-    z2D = np.vstack((np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1]))), z2D,
-                     np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1])))))
+					 np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2)))))
+	z2D = np.vstack((np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1]))), z2D,
+					 np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1])))))
 	
 	deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist für x- und y-Richtung gleich
 	fa = 1.0/deltax #Nyquist-Frequenz
