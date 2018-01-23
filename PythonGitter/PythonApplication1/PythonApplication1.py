@@ -408,7 +408,6 @@ def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
     #Spalte einzubauen.
 
     mittelpunkteDerLoecher = Transmission_Mittelpunkte(n,d)
-    #print(mittelpunkteDerLoecher)
     for pkt in mittelpunkteDerLoecher:
         r = r + (exp(i()*u*pkt))
 
@@ -627,36 +626,38 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     
     plt.subplot(2,2,3)
     h = plt.contourf(X,Y,z4,levels=levels_z4,cmap=cmap_nonlin_z4)
+    plt.subplot(2,2,3).set_title("analytisch")
     plt.colorbar()
             
     plt.subplot(2,2,4)
     l = plt.contourf(XX,YY,z2Df,levels=levels_z4,cmap=cmap_nonlin_z4)
+    plt.subplot(2,2,4).set_title("fft")
     plt.colorbar()
         
     plt.show()
-	
+
 def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     # n  : Anzahl der Spalte
     # a  : Größe der Spalte
     # d  : Abstand (egal für Einzelspalt)
     
-    x1  = np.arange(-5., 5., 0.005)
-    y1  = np.arange(-5., 5., 0.005)
+    x1  = np.linspace(-5., 5., 1200)
+    y1  = np.linspace(-5., 5., 1200)
     
     X,Y = np.meshgrid(x1, y1)
 
     #Berechnung dft
-    z1 = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+    z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     z1 /= z1.max()
-	
-    ## Berechnung mit Formel
-    z2normal = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)    
-    z2normal /= z2normal.max()
-	
+    
+    ## Berechnung analytisch
+    z2 = interferenz_Nspalt_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z2 /= z2.max()
+    
     #Berechnung fft 2D
     XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-    z2Df /= z2Df.max()
-	
+    z2Df/=z2Df.max()
+    
     ## Farbstufen für das Bild
     levels_z1 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
     cmap_lin = plt.cm.Reds
@@ -665,15 +666,18 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     fig, ax = plt.subplots(nrows=1, ncols=3)
     
     plt.subplot(1,3,1)
+    g = plt.contourf(x1,y1,z1,levels=levels_z1,cmap=cmap_nonlin_z1)
+    plt.subplot(1,3,1).set_title("dft ohne Gitterfehler")
+    plt.colorbar()
+    
+    plt.subplot(1,3,2)
+    f = plt.contourf(x1,y1,z2,levels=levels_z1,cmap=cmap_nonlin_z1)
+    plt.subplot(1,3,2).set_title("analytisch")
+    plt.colorbar()
+    
+    plt.subplot(1,3,3)    
     h = plt.contourf(XX,YY,z2Df,levels=levels_z1,cmap=cmap_nonlin_z1)
-    plt.colorbar()
-    
-    plt.subplot(1,3,2) ## plot analytisch
-    f = plt.contourf(X,Y,z2normal,levels=levels_z1,cmap=cmap_nonlin_z1)
-    plt.colorbar()
-    
-    plt.subplot(1,3,3) ## plot dft
-    g = plt.contourf(X,Y,z3,levels=levels_z1,cmap=cmap_nonlin_z1)
+    plt.subplot(1,3,3).set_title(fft)
     plt.colorbar()
           
     plt.show()
