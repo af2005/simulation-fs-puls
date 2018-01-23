@@ -605,18 +605,26 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     
     z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,0,error_matrix)
     z2 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
+    time_trans = time.time()
+    print("Berechnung der Transmissionen dauerte: " + str(time_trans - start_time))
     
     x1  = np.linspace(-5., 5., 1200)
     y1  = np.linspace(-5., 5., 1200)
     
     X,Y = np.meshgrid(x1, y1)
-
+    
+    
     z4 = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
     z4 /= np.nanmax(z4) #normalization
+    time_anal = time.time()
+    print("Berechnung analytisch dauerte: " + str(time_anal - time_trans))
+    
+    
     XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     z2Df /= np.nanmax(z2Df)
+    time_fft = time.time()
+    print("Berechnung fft dauerte: " + str(time_fft - time_anal))
     
-    print("Berechnungen dauerten: " + str(time.time() - start_time))
     ## Farbstufen für das Bild
     levels_z4 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
     cmap_lin = plt.cm.Reds
@@ -639,11 +647,11 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     l = plt.contourf(XX,YY,z2Df,levels=levels_z4,cmap=cmap_nonlin_z4)
     plt.subplot(2,2,4).set_title("fft")
     plt.colorbar()
-        
-    plt.show()
-
-    print("Berechnungen und Plot dauerten: " + str(time.time() - start_time))
     
+    print("Plot dauerte: " + str(time.time() - time_fft))
+    
+    plt.show()
+        
 def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     # n  : Anzahl der Spalte
     # a  : Größe der Spalte
@@ -656,23 +664,31 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     X,Y = np.meshgrid(x1, y1)
 
     #Berechnung dft
-    z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+    z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
     z1 /= z1.max()
+    time_dft = time.time()
+    print("Berechnung dft dauerte: " + str(time_dft - start_time))
     
     ## Berechnung analytisch
-    z2 = interferenz_Nspalt_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+    z2 = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
     z2 /= z2.max()
+    time_anal = time.time()
+    print("Berechnung analytisch dauerte: " + str(time_anal - time_dft))
     
     #Berechnung fft 2D
     XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
     z2Df/=z2Df.max()
     
-    print("Berechnungen dauerten: " + str(time.time() - start_time))
+    time_fft = time.time()
+    print("Berechnung fft dauerten: " + str(time_fft - time_anal))
     
     ## Farbstufen für das Bild
     levels_z1 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
     cmap_lin = plt.cm.Reds
     cmap_nonlin_z1 = nlcmap(cmap_lin, levels_z1)
+    
+    time_cm = time.time()
+    print("Colormap dauerte: " + str(time_cm - time_fft))
     
     fig, ax = plt.subplots(nrows=1, ncols=3)
     
@@ -688,12 +704,11 @@ def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     
     plt.subplot(1,3,3)    
     h = plt.contourf(XX,YY,z2Df,levels=levels_z1,cmap=cmap_nonlin_z1)
-    plt.subplot(1,3,3).set_title(fft)
+    plt.subplot(1,3,3).set_title("fft")
     plt.colorbar()
-          
-    plt.show()
     
-    print("Berechnungen und Plot dauerten: " + str(time.time() - start_time))
+    print("Plot dauerte: " + str(time.time() - time_cm))
+    plt.show()
 	
 if __name__ == "__main__":
 	main()
