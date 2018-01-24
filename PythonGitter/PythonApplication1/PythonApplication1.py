@@ -66,7 +66,7 @@ def main():
 	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--abstand', dest='zs', help='Schirmabstand in cm',default=350)
-	parser.add_argument('--calctype', dest='calctype',help='calctype=canvas: Leinwand zu haben und ein Beugungsmuster eines beliebigen Objekts zu bekommen',default='canvas')
+	parser.add_argument('--calctype', dest='calctype',help='Waehle aus canvas,dftFft,periodisch,any,griderror)',default='canvas')
 	
 	args = parser.parse_args()
 
@@ -121,6 +121,7 @@ def main():
 
 
 	if calctype == 'canvas': 
+		# Leinwand aehnlich zu mspaint. Beugungsmuster eines beliebigen Objekts
 		Main_Canvas(wl,zs)
 	elif calctype == 'dftFft':
 		Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
