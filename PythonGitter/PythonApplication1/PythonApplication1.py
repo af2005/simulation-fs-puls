@@ -692,94 +692,6 @@ def Main_Canvas(wl,zs):
 	'''
 
 
-def Main_Periodisch(nx,ny,ax,ay,dx,dy,wl,zs):
-	# n  : Anzahl der Spalte
-	# a  : Größe der Spalte
-	# d  : Abstand (egal für Einzelspalt)
-	
-	x1  = np.linspace(-5., 5., 1200)
-	y1  = np.linspace(-5., 5., 1200)
-
-	X,Y = np.meshgrid(x1, y1)
-	Z = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-
-	h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
-	plt.show()
-	
-def Main_AnyFunction(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-	# n  : Anzahl der Spalte
-	# a  : Größe der Spalte
-	# d  : Abstand (egal für Einzelspalt)
-	
-	x1  = np.linspace(-5., 5., 1200)
-	y1  = np.linspace(-5., 5., 1200)
-
-	X,Y = np.meshgrid(x1, y1)
-	Z = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-	
-	h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
-	plt.show()
-
-def Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-	# n  : Anzahl der Spalte
-	# a  : Größe der Spalte
-	# d  : Abstand (egal für Einzelspalt)
-	start_time = time.time()
-	
-	d=max(dx,dy)
-	n=max(nx,ny)
-	a=max(ax,ay)
-	x_Spalt = np.array(np.linspace(-n*d/2,n*d/2,1200))
-	y_Spalt = np.array(np.linspace(-n*d/2,n*d/2,1200))
-	
-	X_mat_Spalt, Y_mat_Spalt = np.meshgrid(x_Spalt,y_Spalt)
-	
-	z1 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,0,error_matrix)
-	z2 = Transmission_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
-	
-	x1  = np.linspace(-5., 5., 1200)
-	y1  = np.linspace(-5., 5., 1200)
-	
-	X,Y = np.meshgrid(x1, y1)
-
-	z4 = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	z4 /= np.nanmax(z4) #normalization
-	print("Analytische Berechnungen dauerten: " + str(time.time() - start_time))
-
-	start_time = time.time()
-
-	XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-	z2Df /= np.nanmax(z2Df)
-	
-	print("FFT Berechnungen dauerten: " + str(time.time() - start_time))
-	start_time = time.time()
-
-	## Farbstufen für das Bild
-	levels_z4 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
-	cmap_lin = plt.cm.Reds
-	cmap_nonlin_z4 = nlcmap(cmap_lin, levels_z4)
-
-	#fig, ax = plt.subplots(nrows=2, ncols=2)
-	gs = gridspec.GridSpec(2, 2, height_ratios=[1, 3]) 
-	plt.subplot(gs[0, 0])
-	f = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z1, cmap='gray')
-	
-	plt.subplot(gs[0, 1])
-	g = plt.pcolor(X_mat_Spalt*1000000, Y_mat_Spalt*1000000,z2, cmap='gray')
-	
-	plt.subplot(gs[1, 0])
-	h = plt.contourf(X,Y,z4,levels=levels_z4,cmap=cmap_nonlin_z4)
-	plt.subplot(gs[1, 0]).set_title("analytisch")
-	plt.colorbar()
-			
-	plt.subplot(gs[1, 1])
-	l = plt.contourf(XX,YY,z2Df,levels=levels_z4,cmap=cmap_nonlin_z4)
-	plt.subplot(gs[1, 1]).set_title("fft")
-	plt.colorbar()
-		
-	plt.show()
-	print("Plot Berechnungen dauerten: " + str(time.time() - start_time))
-	
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		
 	### Init and Parameters for plotting
@@ -803,7 +715,7 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 
 		### DFT
 		start_time_dft = time.time()
-		intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		intensity_DFT  = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
 		intensity_DFT /= intensity_DFT.max() #normierung
 		total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
 		print("DFT Berechnung dauerte: " + total_time_dft)
