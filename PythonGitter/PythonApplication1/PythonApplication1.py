@@ -700,16 +700,14 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	intensity_obj       = Transmission_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,0,error_matrix)
 	intensity_obj_error = Transmission_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
 	
+	### DFT
+	start_time_dft = time.time()
+	intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+	intensity_DFT /= intensity_DFT.max() #normierung
+	total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
+	print("DFT Berechnung dauerte: " + total_time_dft)
+
 	if errortype == 0:
-
-		### DFT
-		start_time_dft = time.time()
-		intensity_DFT  = fourierNspaltAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-		intensity_DFT /= intensity_DFT.max() #normierung
-		total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
-		print("DFT Berechnung dauerte: " + total_time_dft)
-		
-
 		### Analyisch
 		start_time_anal = time.time()
 		intensity_anal = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
@@ -733,7 +731,7 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj, cmap='gray')
 		
 		plt.subplot2grid((2, 3), (0, 1))
-		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj, cmap='gray')
+		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
 		
 		plt.subplot2grid((2, 3), (0, 2))
 		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
@@ -752,16 +750,23 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		
 		plt.subplot2grid((2, 3), (1, 2))  
 		plt.subplot2grid((2, 3), (1, 2)).set_title("FFT. t=" +total_time_fft)
+		plt.contourf(XX,YY,intensity_fft,levels=levels_screen,cmap=cmap_nonlin)
+		plt.colorbar()
+
 	# errortype != 0, thus showing only fft
 	else:
-		plt.subplot2grid((1, 2), (0, 0))
+		plt.subplot2grid((1,3), (0, 0))
 		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
 
-		plt.subplot2grid((1, 2), (0, 1))
-		plt.subplot2grid((1, 2), (0, 1)).set_title("FFT. t=" +total_time_fft)
+		plt.subplot2grid((1, 3), (0, 1))
+		plt.subplot2grid((1, 3), (0, 1)).set_title("DFT. t=" + total_time_dft)
+		plt.contourf(X,Y,intensity_DFT,levels=levels_screen,cmap=cmap_nonlin)
+		plt.colorbar()
 
-	plt.contourf(XX,YY,intensity_fft,levels=levels_screen,cmap=cmap_nonlin)
-	plt.colorbar()
+		plt.subplot2grid((1,3), (0, 2))
+		plt.subplot2grid((1,3), (0, 2)).set_title("FFT. t=" +total_time_fft)
+		plt.contourf(XX,YY,intensity_fft,levels=levels_screen,cmap=cmap_nonlin)
+		plt.colorbar()
 	
 	plt.suptitle('Breite x (um): '+ str(round(ax*1e6)) + ', Hoehe y (um): '+str(round(ay*1e6)) + ', Abstand in x (um):' + str(round(dx*1e6)) + ', Abstand in y (um):' + str(round(dy*1e6)) + ', Wellenlänge in nm:' + str(round(wl*1e9))  + ', Schirmabstand in m: ' + str(zs))  
 	plt.show()
