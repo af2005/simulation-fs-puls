@@ -118,14 +118,14 @@ def main():
 
 
 	if calctype == 'canvas': 
-		Main_Canvas()
-	else if calctype == 'dftFft':
+		Main_Canvas(wl,zs)
+	elif calctype == 'dftFft':
 		Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
-	else if calctype == 'periodisch':
+	elif calctype == 'periodisch':
 		Main_Periodisch(nx,ny,ax,ay,dx,dy,wl,zs)
-	else if calctype == 'any':
+	elif calctype == 'any':
 		Main_AnyFunction(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
-	else if calctype == 'griderror':
+	elif calctype == 'griderror':
 		Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
 		
 	#__________________________________________________________________
@@ -194,12 +194,12 @@ def complex_int(func, a, b, **kwargs):
 ### returns: Transformiert ein fehlerfreies Gitter definiert durch die Anzahl der Spalte in x- und y-Richtung nx und ny in ein Gitter mit leicht verschobenen Loechern
 def error_matrix(nx,ny):
 	error_matrix = []
-		for i in range(ny):
-			error_row=[]
-			for j in range(nx):
-				error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
-			error_matrix.append(error_row)
-		return np.array(error_matrix)
+	for i in range(ny):
+		error_row=[]
+		for j in range(nx):
+			error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
+		error_matrix.append(error_row)
+	return np.array(error_matrix)
 
 ### class nlcmap()
 ### zur Darstellung der Intensität verwenden wir einen nicht-linearen, diskreten Farbverlauf nach 
@@ -582,7 +582,7 @@ def interferenz_Gitter_analytisch(X,Y,nx,ny,ax,ay,dx,dy,wl,zs):
 #### Aufzurufen aus der main()
 ####__________________________________________________________________
 
-def Main_Canvas():
+def Main_Canvas(wl,zs):
 	canvas_size = 500 		#Groesse der quadratischen Leinwand
 	drawradius = 10			#Stiftdicke
 
