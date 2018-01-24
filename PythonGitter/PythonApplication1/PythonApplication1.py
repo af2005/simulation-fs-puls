@@ -558,7 +558,6 @@ def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 def interferenz_einzelspalt_analytisch(X,a,wl,zs):
 	alphax = arctan(X/zs)
 	return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
-
 def interferenz_Nspalt_analytisch(X,n,a,d,wl,zs):
 	return_vec = []
 	for x in X:
@@ -780,7 +779,7 @@ def Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	start_time = time.time()
 	
 	## Berechnung analytisch
-	z2 = interferenz_Nspalt_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+	z2 = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 	z2 /= z2.max()
 	print("Analytische Berechnungen dauerten: " + str(time.time() - start_time))
 	start_time = time.time()
