@@ -39,36 +39,23 @@ import argparse
 #Canvas
 from tkinter import *
 
-## zur Darstellung der Intensität verwenden wir einen nicht-linearen Farbverlauf nach 
-## https://stackoverflow.com/questions/33873397/nonlinear-colormap-with-matplotlib
-class nlcmap(LinearSegmentedColormap):
-	"""A nonlinear colormap"""
+####### TODOS ######
+'''
+moeglich:
+	- Uberlagerung von verschiendenen Wellenlaengen
+	- mehrere Gitter
+	- Einfallswinkel von 90 deg verschieden
 
-	name = 'nlcmap'
 
-	def __init__(self, cmap, levels):
-		self.cmap = cmap
-		self.monochrome = self.cmap.monochrome
-		self.levels = np.asarray(levels, dtype='float64')
-		self._x = self.levels/ self.levels.max()
-		self.levmax = self.levels.max()
-		self.levmin = self.levels.min()
-		self._y = np.linspace(self.levmin, self.levmax, len(self.levels))
-
-	def __call__(self, xi, alpha=1.0, **kw):
-		yi = np.interp(xi, self._x, self._y)
-		return self.cmap(yi/self.levmax, alpha)
-
+'''
 
 #main() wird automatisch aufgerufen
 def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
-	#
-	# Für Spalte nur in 1 Richtung mit unendlicher Ausdehnung einfach nx/ny auf 0 setzen
+
 	#parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=2)
-	#
 	parser.add_argument('--nx', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
-	parser.add_argument('--ny', dest='ny', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
+	parser.add_argument('--ny', dest='ny', help='Die Anzahl der Spalte in y-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
 	parser.add_argument('--ax', dest='ax', help='Spaltbreite in um',default=3)
 	parser.add_argument('--ay', dest='ay', help='Spalthoehe in um',default=5)
 	parser.add_argument('--dx', dest='dx', help='Spaltabstand in horizontaler Richtung in um',default=10)
@@ -76,13 +63,10 @@ def main():
 	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--abstand', dest='zs', help='Schirmabstand in cm',default=350)
-	parser.add_argument('--custom', dest='custom',help='Setze auf 1 um eine Leinwand zu haben und ein Beugungsmuster eines beliebigen Objekts zu bekommen',default=0 )
+	parser.add_argument('--calctype', dest='calctype',help='calctype=canvas: Leinwand zu haben und ein Beugungsmuster eines beliebigen Objekts zu bekommen',default='canvas')
 	
-
-
 	args = parser.parse_args()
 
-	
 	print('------------------------------------------------------------------------------')
 	print('Kunst der Computer-basierten Modellierung und Simulation experimenteller Daten')
 	print('------------------------------------------------------------------------------')
@@ -93,22 +77,22 @@ def main():
 	print('')
 	print('------------------------------------------------------------------------------')
 	print('')
-	print('Es wurden folgende Parameter eingegeben oder angenommen'                           )
+	print('Es wurden folgende Parameter eingegeben oder angenommen'                       )
 	#print('   Dimension                                  :  ' + str(args.dimension))
 	#print('   Falls Dimension = 1, berechnen wir für     :')
 	print('   Anzahl der Spalte:')
-	print('      ' + str(args.nx) + ' Spalte in horizontaler Richtung(x)')
-	print('      ' + str(args.ny) + ' Spalte in vertikaler Richtung(y)')
-	print('   Spaltbreite in um          :')
-	print('      horizontal(x):   ' + str(args.ax))
-	print('      vertikal(y):     ' + str(args.ay))
+	print('      nx=' + str(args.nx) + ' Spalte in horizontaler Richtung(x)'              )
+	print('      ny=' + str(args.ny) + ' Spalte in vertikaler Richtung(y)'                )
+	print('   Spaltbreite in um          :'                                               )
+	print('      horizontal(x):   ax=' + str(args.ax)                                     )
+	print('      vertikal(y):     ay=' + str(args.ay)                                     )
 	print('   Spaltabstand in um          :')
-	print('      horizontal(x):   ' + str(args.dx))
-	print('      vertikal(y):     ' + str(args.dy))
-	print('   Gitterfehler:       ' + str(args.errortype))
-	print("   Wellenlänge in  nm                         :  " + str(args.wl))
-	print("   Schirmabstand in cm                        :  " + str(args.zs))
-	print('')
+	print('      horizontal(x):   dx=' + str(args.dx)                                     )
+	print('      vertikal(y):     dy=' + str(args.dy)                                     )
+	print('   Gitterfehler:          ' + str(args.errortype)                              )
+	print("   Wellenlänge in  nm     " + str(args.wl)                                     )
+	print("   Schirmabstand in cm    " + str(args.zs)                                     )
+	print('                                                                              ')
 	print('------------------------------------------------------------------------------')
 
 	#__________________________________________________________________
@@ -122,7 +106,7 @@ def main():
 	errortype = int(args.errortype)
 	wl = int(args.wl) * 1e-9
 	zs = int(args.zs) * 1e-2
-	custom = int(args.custom)
+	calctype = str(args.calctype)
 	
 	
 	matplotlib.rcParams.update({'font.size': 30}) ## change font size
@@ -133,191 +117,70 @@ def main():
 		sys.exit(0)
 
 
-	if custom == 1:
-		#baue canvas
-
-		canvas_size = 500
-		drawradius = 10
-
-		imagearray =  [[ 0 for xcoord in range( canvas_size ) ] for ycoord in range( canvas_size ) ]
-
-
-
-		def getNeightbourPixels(x0,y0):
-			#gets all neightbouring pixels within a certain distance
-			x0 = int(x0)
-			y0 = int(y0)
-			newdrawradius = drawradius
-			def abstand(x0,y0,x,y):
-				return math.trunc(math.sqrt((x-x0)**2 + (y-y0)**2))
-			tempx = x0-newdrawradius
-			tempy = y0-newdrawradius
-
-			if tempx < 0 :
-				tempx = 0
-			if tempy < 0:
-				tempy = 0
-
-			while tempx < canvas_size:
-				tempy = y0-newdrawradius
-				while (tempy < y0+newdrawradius) and tempy < canvas_size:
-					if (abstand(x0,y0,tempx,tempy) <= newdrawradius):
-						imagearray[tempy][tempx] = 1
-					tempy = tempy+1
-				tempx = tempx + 1	
-
-			#print("durchlaufx" + str(durchlaufx))
-			#print("durchlaufy" + str(durchlaufy))
-
-
-
-		def paint( event ):
-			draw_color = "#FFFFFF"
-			x1, y1 = ( event.x - drawradius ), ( event.y - drawradius)
-			x2, y2 = ( event.x + drawradius ), ( event.y + drawradius)
-			getNeightbourPixels(event.x,event.y)
-			w.create_oval( x1, y1, x2, y2, fill = draw_color, outline=draw_color )
-
-		def drawPlot(event):
-
-			trans=np.array(imagearray)
-			X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2*1e-3,trans.shape[1]/2*1e-3,trans.shape[1]), np.linspace(-trans.shape[0]/2*1e-3,trans.shape[0]/2*1e-3,trans.shape[0]))
-			X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
-			Z /= np.nanmax(Z)
-
-			levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
-			cmap_lin = plt.cm.Reds
-			cmap_nonlin_Z = nlcmap(cmap_lin, levels_Z)
-			
-			fig, ax = plt.subplots(nrows=1, ncols=2)
-		
-			plt.subplot(1,2,1)
-			plt.contourf(X_trans,Y_trans,trans,cmap='gray')
-			
-			plt.subplot(1,2,2)
-			plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
-			plt.colorbar()
-					
-			plt.show()	
-			#end plot
-
-		master = Tk()
-		master.title( "Beugungsmuster" )
-		w = Canvas(master, 
-				   width=canvas_size, 
-				   height=canvas_size,
-				   bg="#000000")
-		w.pack(expand = NO, fill = BOTH)
-		w.bind("<B1-Motion>", paint)
-		w.bind("<ButtonRelease-1>",drawPlot)
-
-		message = Label( master, text = "Press and Drag the mouse to draw" )
-		message.pack( side = BOTTOM )
-		mainloop()	
-		
-		'''
-		for row in imagearray:
-			rowcontent = ""
-			for entry in row:
-				rowcontent += str(entry)
-			print(rowcontent)
-		'''
-		
-	
-
-
-	else:
-			#__________________________________________________________________
-		# Mehrere Gitter / Wellenlängen Überlagerung
-		
-		'''
-		sehr gute Ideen was wir machen können! Ich kommentiere die nur  erstmal aus,
-		 sodass ich mit einer festen Wellenlänge und einem Gitter anfangen kann und nicht von den Fragen
-		 genervt werde ;) Alle Parameter werden oben als Argument definiert, sodass ich die nicht immer 
-		 eingeben muss. Siehe default value.
-
-		i = int(input("Wie viele Wellenlängen sollen in der Welle überlagert sein? "))
-
-		if i >= 1:
-			counter = 1
-			wl = list()
-			while counter <= i:
-				wltemp = float(input("Wellenlänge in nm? ")) # Lambda in nm
-				wl.append(wl)
-				counter += 1
-		else: 
-			wl = float(input("Wellenlänge in nm? ")) # Lambda in nm
-
-		
-
-		N = int(input("Anzahl der Gitter? "))
-		alpha = float(input("Einfallswinkel? "))
-
-		
-		zs = 0
-		while a*10 >= zs:
-			zs = float(input("Abstand des Schirms in cm? "))
-		'''
-
-		error_matrix = []
-		for i in range(ny):
-			error_row=[]
-			for j in range(nx):
-				error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
-			error_matrix.append(error_row)
-		error_matrix = np.array(error_matrix)
-
-		#comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-		#spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs)
-		#spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-		comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	if calctype == 'canvas': 
+		Main_Canvas()
+	else if calctype == 'dftFft':
+		Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
+	else if calctype == 'periodisch':
+		Main_Periodisch(nx,ny,ax,ay,dx,dy,wl,zs)
+	else if calctype == 'any':
+		Main_AnyFunction(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
+	else if calctype == 'griderror':
+		Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
 		
 	#__________________________________________________________________
 	# Ende der main()
 
 
 ####__________________________________________________________________
-#### Hilfsvariablen/funktionen. Muss leider so. Python ist etwas eigen 
-#### mit seinen globalen Variable. Im Prinzip existieren sie nicht. 
-#### Jetzt kann man überall darauf zugreifen mit z.B. c(). 
-#### Die Wellenlänge müssen wir aber leider mitschleppen.
+#### Hilfsvariablen/funktionen. 
 ####__________________________________________________________________
 
+### kgV2(int a, int b): 
+### returns: KgV der beiden ints a und b zurück
 def kgV2(a, b):
-	## gibt das KgV der beiden ints a und b zurück
 	return (a * b) // math.gcd(a, b)
 
+### kgV_arr([int] numbers): 
+### returns: kgV einer beliebigen Liste von Ints zurück
 def kgV_arr(numbers):
-	## gibt das kgV einer beliebigen Liste von Ints zurück
 	kgV = numbers[0]
 	for i in range(1,len(numbers)):
 		kgV=kgV2(kgV,numbers[i])
 	return kgV
 
+### k(int wl)
+### returns Wellenzahl bei gegebener Wellenlaenge wl
 def k(wl):
-	# Kreiswellenzahl
 	return 2 * np.pi / wl 
+
+### w(int wl)
+### returns Kreisfrequenz Omega bei gegebener Wellenlaenge wl
 def w(wl):
-	# Kreisfrequenz Omega
-	return c() * k(wl) 
-def f(wl):
-	# Frequenz
-	return c() / wl 
+	return c() * k(wl)
+
+### c()
+### returns float Lichtgeschwindigkeit
 def c():
 	return float(299792458) # m/s
 
+### sinc(float)
+### returns sinc function: sin(x)/x
 def sinc(x):
 	return sin(x)/x
 
+### i()
+### returns the imaginary unit.
 def i():
 	return complex(0,1)
 
-def dirac(x,mu):
-	#ich weiß noch nicht wie es am besten ist hier dran zu gehen. 
-	#Das hier ist eine gängige Approximation für mu->infinity
-	return (np.abs(mu)/((pi)**0.5)) * exp(-(x*mu)**2)
+### abstandZweiterPkte(int x0, int y0, int x, int y)
+### returns: Abstand des Punktes (x,y) zum Punkt (x0,y0) auf einer 2D Ebene
+def abstandZweierPkte(x0,y0,x,y):
+	return round(math.sqrt((x-x0)**2 + (y-y0)**2))
 
-#sollte keinen Unterschied fuer uns machen, da das Ergebnis immer real ist (zumindest fuer n Spalte)
+### complex_int(lambda y: func, int a, int b):
+### returns: complex integral of func from a to b
 def complex_int(func, a, b, **kwargs):
 	def real_func(x):
 		return scipy.real(func(x))
@@ -327,6 +190,33 @@ def complex_int(func, a, b, **kwargs):
 	imag_integral = integrate.quad(imag_func, a, b, **kwargs)
 	return (real_integral[0] + i()*imag_integral[0])
 
+### error_matrix(int nx, int ny):
+### returns: Transformiert ein fehlerfreies Gitter definiert durch die Anzahl der Spalte in x- und y-Richtung nx und ny in ein Gitter mit leicht verschobenen Loechern
+def error_matrix(nx,ny):
+	error_matrix = []
+		for i in range(ny):
+			error_row=[]
+			for j in range(nx):
+				error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
+			error_matrix.append(error_row)
+		return np.array(error_matrix)
+
+### class nlcmap()
+### zur Darstellung der Intensität verwenden wir einen nicht-linearen, diskreten Farbverlauf nach 
+### https://stackoverflow.com/questions/33873397/nonlinear-colormap-with-matplotlib
+class nlcmap(LinearSegmentedColormap):
+	name = 'nlcmap'
+	def __init__(self, cmap, levels):
+		self.cmap = cmap
+		self.monochrome = self.cmap.monochrome
+		self.levels = np.asarray(levels, dtype='float64')
+		self._x = self.levels/ self.levels.max()
+		self.levmax = self.levels.max()
+		self.levmin = self.levels.min()
+		self._y = np.linspace(self.levmin, self.levmax, len(self.levels))
+	def __call__(self, xi, alpha=1.0, **kw):
+		yi = np.interp(xi, self._x, self._y)
+		return self.cmap(yi/self.levmax, alpha)
 
 ####__________________________________________________________________
 #### Berechnungsfunktionen mittels Fouriertransformation 
@@ -692,10 +582,96 @@ def interferenz_Gitter_analytisch(X,Y,nx,ny,ax,ay,dx,dy,wl,zs):
 #### Aufzurufen aus der main()
 ####__________________________________________________________________
 
+def Main_Canvas():
+	canvas_size = 500 		#Groesse der quadratischen Leinwand
+	drawradius = 10			#Stiftdicke
+
+	# wir legen ein Matrix an (Liste in Liste) mit den Dimenstion canvas_size x canvas_size
+	# jeder Eintrag entspricht einem Pixel auf der Canvas. Moegliche Eintraege: 0 fuer keine Transmission, 1 fuer Transmission
+	imagearray =  [[ 0 for xcoord in range( canvas_size ) ] for ycoord in range( canvas_size ) ]
+
+	### getNeightbourPixels(int x0, int y0)
+	###	Beim Malen auf der Canvas werden die akutellen Mauskoordinaten (x0,y0) uebermittelt. 
+	###	Wir berechnen hier nun alle weiteren Pixel im Umkreis von drawradius
+	def getNeightbourPixels(x0,y0):
+		x0 = int(x0)
+		y0 = int(y0)
+		
+		#
+		#abstand(int x0,int y0, int x, int y)
+		
+		tempx = x0-drawradius
+		tempy = y0-drawradius
+
+		if (tempx < 0) :
+			tempx = 0
+		if (tempy < 0):
+			tempy = 0
+
+		while (tempx <= x0+drawradius) and (tempx < canvas_size):
+			tempy = y0-drawradius
+			while (tempy < y0+drawradius) and (tempy < canvas_size):
+				if (abstandZweierPkte(x0,y0,tempx,tempy) <= drawradius):
+					imagearray[tempy][tempx] = 1
+				tempy = tempy+1
+			tempx = tempx + 1	
+
+		#print("durchlaufx" + str(durchlaufx))
+		#print("durchlaufy" + str(durchlaufy))
+
+	def paint( event ):
+		draw_color = "#FFFFFF"
+		x1, y1 = ( event.x - drawradius ), ( event.y - drawradius)
+		x2, y2 = ( event.x + drawradius ), ( event.y + drawradius)
+		getNeightbourPixels(event.x,event.y)
+		w.create_oval( x1, y1, x2, y2, fill = draw_color, outline=draw_color )
+
+	def drawPlot(event):
+		trans=np.array(imagearray)
+		X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2,trans.shape[1]/2,trans.shape[1]), np.linspace(-trans.shape[0]/2,trans.shape[0]/2,trans.shape[0]))
+		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
+		Z /= np.nanmax(Z)
+
+		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
+		cmap_lin = plt.cm.Reds
+		cmap_nonlin_Z = nlcmap(cmap_lin, levels_Z)
+		
+		fig, ax = plt.subplots(nrows=1, ncols=2)
+	
+		plt.subplot(1,2,1)
+		plt.contourf(X_trans,-Y_trans,trans,cmap='gray')
+		
+		plt.subplot(1,2,2)
+		plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
+		plt.colorbar()
+				
+		plt.show()	
+
+	master = Tk()
+	master.title( "Beugungsmuster" )
+	w = Canvas(master, 
+			   width=canvas_size, 
+			   height=canvas_size,
+			   bg="#000000")
+	w.pack(expand = NO, fill = BOTH)
+	w.bind("<B1-Motion>", paint)
+	w.bind("<ButtonRelease-1>",drawPlot)
+
+	message = Label( master, text = "Press and Drag the mouse to draw" )
+	message.pack( side = BOTTOM )
+	mainloop()	
+	
+	'''
+	### Output imagearray in a better format then print for easy comparism with the drawn picture
+	for row in imagearray:
+		rowcontent = ""
+		for entry in row:
+			rowcontent += str(entry)
+		print(rowcontent)
+	'''
 
 
-
-def spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs):
+def Main_Periodisch(nx,ny,ax,ay,dx,dy,wl,zs):
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
@@ -709,7 +685,7 @@ def spaltPeriodisch3d(nx,ny,ax,ay,dx,dy,wl,zs):
 	h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
 	plt.show()
 	
-def spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def Main_AnyFunction(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
@@ -723,7 +699,7 @@ def spaltAnyFunction3d(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	h = plt.contour(X,Y,Z,levels = np.linspace(np.min(Z), np.max(Z), 100))
 	plt.show()
 
-def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
@@ -783,7 +759,7 @@ def comparegriderrors(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	plt.show()
 	print("Plot Berechnungen dauerten: " + str(time.time() - start_time))
 	
-def comparefft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	# n  : Anzahl der Spalte
 	# a  : Größe der Spalte
 	# d  : Abstand (egal für Einzelspalt)
