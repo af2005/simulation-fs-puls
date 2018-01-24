@@ -358,8 +358,8 @@ def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisf
 		n = max(nx,ny)
 		a = max(ax,ay)
 		datapoints = kgV_arr([int(d*1e6*20*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-		while(datapoints*wl/4/n/d/10<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
-			datapoints*=2                                   ## 0.82 für Plot bis +-5m
+		while(datapoints*wl/4/n/d/10<0.82*2):               ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+			datapoints*=2                                   ## 0.82*2 für Plot bis +-5m
 		N = datapoints+1                                    ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
 		x_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
 		y_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## wähle großen Bereich für die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
@@ -386,7 +386,7 @@ def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisf
 
 def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs):
 	datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-	while(datapoints*wl/4/nx/dx/10<0.82):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+	while(datapoints*wl/4/nx/dx/10<0.82*2):                 ## erhöhe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
 		datapoints*=2                                     ## 0.82 für Plot bis +-5m
 	N = datapoints+1                                      ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
 	
