@@ -837,7 +837,8 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	plt.subplot2grid((2, 3), (1, 2)).set_title("FFT. t=" +total_time_fft)
 	plt.contourf(XX,YY,intensity_fft,levels=levels_screen,cmap=cmap_nonlin)
 	plt.colorbar()
-	  
+	
+	plt.suptitle('Breite x (um): '+ str(round(ax*1e6)) + ', Hoehe y (um): '+str(round(ay*1e6)) + ', Abstand in x (um):' + str(round(dx*1e6)) + ', Abstand in y (um):' + str(round(dy*1e6)) + ', Wellenlänge in nm:' + str(round(wl*1e9))  + ', Schirmabstand in m: ' + str(zs))  
 	plt.show()
 	
 
