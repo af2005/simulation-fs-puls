@@ -52,7 +52,6 @@ moeglich:
 
 '''
 
-#main() wird automatisch aufgerufen
 def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
 
@@ -65,7 +64,7 @@ def main():
 	parser.add_argument('--dy', dest='dy', help='Spaltabstand in vertikaler Richtung in um',default=5)
 	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp. 0 fuer keinen Fehler. 1 fuer zufaellige, kleine Verschiebung jedes Spaltes, 2 fuer 10% Chance fuer jedes Loch, dass es nicht existiert (Fehlstellen)',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
-	parser.add_argument('--abstand', dest='zs', help='Schirmabstand in cm',default=350)
+	parser.add_argument('--zs', dest='zs', help='Schirmabstand in cm',default=350)
 	parser.add_argument('--calctype', dest='calctype',help='Waehle aus default,canvas,periodisch,any,griderror)',default='default')
 	
 	args = parser.parse_args()
@@ -210,7 +209,7 @@ def error_matrix(nx,ny,errortype):
 					error_row.append([[0,0,0,0]])
 			error_matrix.append(error_row)
 		return np.array(error_matrix)
-	else:
+	else: #error type 1
 		error_matrix = []
 		for i in range(ny):
 			error_row=[]
@@ -647,7 +646,7 @@ def Main_Canvas(wl,zs):
 		getNeightbourPixels(event.x,event.y)
 		w.create_oval( x1, y1, x2, y2, fill = draw_color, outline=draw_color )
 
-	def drawPlot(event):
+	def drawPlot():
 		trans=np.array(imagearray)
 		X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2,trans.shape[1]/2,trans.shape[1]), np.linspace(-trans.shape[0]/2,trans.shape[0]/2,trans.shape[0]))
 		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
@@ -676,9 +675,10 @@ def Main_Canvas(wl,zs):
 			   bg="#000000")
 	w.pack(expand = NO, fill = BOTH)
 	w.bind("<B1-Motion>", paint)
-	w.bind("<ButtonRelease-1>",drawPlot)
-
-	message = Label( master, text = "Press and Drag the mouse to draw" )
+	
+	b = Button(master, text="Show Plot", command=drawPlot)
+	b.pack()
+	message = Label( master, text = "Press and Drag the mouse to draw." )
 	message.pack( side = BOTTOM )
 	mainloop()	
 	
