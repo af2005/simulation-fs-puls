@@ -60,10 +60,10 @@ def main():
 	parser.add_argument('--nx', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
 	parser.add_argument('--ny', dest='ny', help='Die Anzahl der Spalte in y-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
 	parser.add_argument('--ax', dest='ax', help='Spaltbreite in um',default=3)
-	parser.add_argument('--ay', dest='ay', help='Spalthoehe in um',default=5)
-	parser.add_argument('--dx', dest='dx', help='Spaltabstand in horizontaler Richtung in um',default=10)
-	parser.add_argument('--dy', dest='dy', help='Spaltabstand in vertikaler Richtung in um',default=10)
-	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp',default=0)
+	parser.add_argument('--ay', dest='ay', help='Spalthoehe in um',default=3)
+	parser.add_argument('--dx', dest='dx', help='Spaltabstand in horizontaler Richtung in um',default=5)
+	parser.add_argument('--dy', dest='dy', help='Spaltabstand in vertikaler Richtung in um',default=5)
+	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp. 0 fuer keinen Fehler. 1 fuer zufaellige, kleine Verschiebung jedes Spaltes, 2 fuer 10% Chance fuer jedes Loch, dass es nicht existiert (Fehlstellen)',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--abstand', dest='zs', help='Schirmabstand in cm',default=350)
 	parser.add_argument('--calctype', dest='calctype',help='Waehle aus default,canvas,periodisch,any,griderror)',default='default')
@@ -124,13 +124,13 @@ def main():
 		# Leinwand aehnlich zu mspaint. Beugungsmuster eines beliebigen Objekts
 		Main_Canvas(wl,zs)
 	elif calctype == 'default':
-		Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
+		Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny,errortype),wl,zs)
 	elif calctype == 'periodisch':
 		Main_Periodisch(nx,ny,ax,ay,dx,dy,wl,zs)
 	elif calctype == 'any':
-		Main_AnyFunction(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
+		Main_AnyFunction(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny,errortype),wl,zs)
 	elif calctype == 'griderror':
-		Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
+		Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny,errortype),wl,zs)
 		
 	#__________________________________________________________________
 	# Ende der main()
@@ -195,15 +195,29 @@ def complex_int(func, a, b, **kwargs):
 	return (real_integral[0] + i()*imag_integral[0])
 
 ### error_matrix(int nx, int ny):
-### returns: Transformiert ein fehlerfreies Gitter definiert durch die Anzahl der Spalte in x- und y-Richtung nx und ny in ein Gitter mit leicht verschobenen Loechern
-def error_matrix(nx,ny):
-	error_matrix = []
-	for i in range(ny):
-		error_row=[]
-		for j in range(nx):
-			error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
-		error_matrix.append(error_row)
-	return np.array(error_matrix)
+### returns if type 1: Transformiert ein fehlerfreies Gitter definiert durch die Anzahl der Spalte in x- und y-Richtung nx und ny in ein Gitter mit leicht verschobenen Loechern
+### returns if type 2: Transformiert ein fehlerfreies Gitter definiert durch die Anzahl der Spalte in x- und y-Richtung in eines mit Fehlstellen
+
+def error_matrix(nx,ny,errortype):
+	if (errortype ==2):
+		error_matrix = []
+		for i in range(ny):
+			error_row=[]
+			for j in range(nx):
+				if(random.randint(0, 100) > 10):
+					error_row.append([[1,1,1,1]])
+				else:
+					error_row.append([[0,0,0,0]])
+			error_matrix.append(error_row)
+		return np.array(error_matrix)
+	else:
+		error_matrix = []
+		for i in range(ny):
+			error_row=[]
+			for j in range(nx):
+				error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
+			error_matrix.append(error_row)
+		return np.array(error_matrix)
 
 
 ### formatSecToMillisec(float time)
@@ -493,22 +507,21 @@ def Transmission_Mittelpunkte(n,d):
 	return mittelpunkte
 
 def Transmission_n_Spalte(x,n,a,d,errortype,error_array):
-		
-	if errortype==0:  ##kein Error
-		gesamttransmission = 0.
-		
+	gesamttransmission = 0.
+	
+	if errortype == 0:  ##kein Error
 		for i in range(n):
 			gesamttransmission += Transmission_Einzelspalt(x-d*(i-n/2+0.5),a)
 	
-	elif errortype==1:
-		
-		gesamttransmission = 0.
+	elif errortype == 1:
 		for i in range(n):
 			gesamttransmission += Transmission_Einzelspalt(x+error_array[i,0]*a-d*(i-n/2+0.5),a*error_array[i,1])
 			
-	#else:
-		#errortype 2
-	
+	elif errortype == 2:
+		#there is a 10% chance that an hole is missing
+		for i in range(n):
+			gesamttransmission += Transmission_Einzelspalt(x-d*(i-n/2+0.5),a) * int(error_array[i][0])
+
 	return gesamttransmission
 
 def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
@@ -770,8 +783,9 @@ def Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		
 	### Init and Parameters for plotting
-	x1  = np.linspace(-5., 5., 1200)
-	y1  = np.linspace(-5., 5., 1200)
+	resolution = 100
+	x1  = np.linspace(-5., 5., resolution)
+	y1  = np.linspace(-5., 5., resolution)
 	X,Y = np.meshgrid(x1, y1)
 	levels_screen = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
 	cmap_lin = plt.cm.Reds
@@ -779,27 +793,28 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 
 	
 	### Objektebene
-	x_obj = np.array(np.linspace(-max(nx,ny)*max(dx,dy)/2,max(nx,ny)*max(dx,dy)/2,1200))
+	x_obj = np.array(np.linspace(-max(nx,ny)*max(dx,dy)/2,max(nx,ny)*max(dx,dy)/2,resolution))
 	y_obj = x_obj
 	x_obj_mesh, y_obj_mesh = np.meshgrid(x_obj,y_obj)
 	intensity_obj       = Transmission_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,0,error_matrix)
 	intensity_obj_error = Transmission_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
 	
+	if errortype == 0:
 
-	### DFT
-	start_time_dft = time.time()
-	intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	intensity_DFT /= intensity_DFT.max() #normierung
-	total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
-	print("DFT Berechnung dauerte: " + total_time_dft)
-	
+		### DFT
+		start_time_dft = time.time()
+		intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		intensity_DFT /= intensity_DFT.max() #normierung
+		total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
+		print("DFT Berechnung dauerte: " + total_time_dft)
+		
 
-	### Analyisch
-	start_time_anal = time.time()
-	intensity_anal = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	intensity_anal /= intensity_anal.max()
-	total_time_anal = formatSecToMillisec(time.time() - start_time_anal)
-	print("Analytische Berechnung dauerte: " + total_time_anal)
+		### Analyisch
+		start_time_anal = time.time()
+		intensity_anal = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		intensity_anal /= intensity_anal.max()
+		total_time_anal = formatSecToMillisec(time.time() - start_time_anal)
+		print("Analytische Berechnung dauerte: " + total_time_anal)
 	
 
 	### FFT
@@ -811,30 +826,39 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	
 	plt.figure(0)
 
-	# Die drei Objektebenen, die ersten beiden ohne Fehler (da analytisch und dft), der dritte mit Fehler (da fft)
-	plt.subplot2grid((2, 3), (0, 0))
-	plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj, cmap='gray')
-	
-	plt.subplot2grid((2, 3), (0, 1))
-	plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj, cmap='gray')
-	
-	plt.subplot2grid((2, 3), (0, 2))
-	plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
-	
+	if errortype == 0:
+		# Die drei Objektebenen, die ersten beiden ohne Fehler (da analytisch und dft), der dritte mit Fehler (da fft)
+		plt.subplot2grid((2, 3), (0, 0))
+		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj, cmap='gray')
+		
+		plt.subplot2grid((2, 3), (0, 1))
+		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj, cmap='gray')
+		
+		plt.subplot2grid((2, 3), (0, 2))
+		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
+		
 
-	plt.subplot2grid((2, 3), (1, 0))
-	plt.subplot2grid((2, 3), (1, 0)).set_title("Analytisch. t=" + total_time_anal )
-	plt.contourf(X,Y,intensity_anal,levels=levels_screen,cmap=cmap_nonlin)
-	plt.colorbar()
+		plt.subplot2grid((2, 3), (1, 0))
+		plt.subplot2grid((2, 3), (1, 0)).set_title("Analytisch. t=" + total_time_anal )
+		plt.contourf(X,Y,intensity_anal,levels=levels_screen,cmap=cmap_nonlin)
+		plt.colorbar()
 
-	plt.subplot2grid((2, 3), (1, 1))
-	plt.subplot2grid((2, 3), (1, 1)).set_title("DFT. t=" + total_time_dft)
-	plt.contourf(X,Y,intensity_DFT,levels=levels_screen,cmap=cmap_nonlin)
-	plt.colorbar()
+		plt.subplot2grid((2, 3), (1, 1))
+		plt.subplot2grid((2, 3), (1, 1)).set_title("DFT. t=" + total_time_dft)
+		plt.contourf(X,Y,intensity_DFT,levels=levels_screen,cmap=cmap_nonlin)
+		plt.colorbar()
 
-	
-	plt.subplot2grid((2, 3), (1, 2))  
-	plt.subplot2grid((2, 3), (1, 2)).set_title("FFT. t=" +total_time_fft)
+		
+		plt.subplot2grid((2, 3), (1, 2))  
+		plt.subplot2grid((2, 3), (1, 2)).set_title("FFT. t=" +total_time_fft)
+	# errortype != 0, thus showing only fft
+	else:
+		plt.subplot2grid((1, 2), (0, 0))
+		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
+
+		plt.subplot2grid((1, 2), (0, 1))
+		plt.subplot2grid((1, 2), (0, 1)).set_title("FFT. t=" +total_time_fft)
+
 	plt.contourf(XX,YY,intensity_fft,levels=levels_screen,cmap=cmap_nonlin)
 	plt.colorbar()
 	
