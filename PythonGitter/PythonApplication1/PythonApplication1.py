@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8; -*-
-#
-# Copyright (C) 2017 Bernd Lienau, Simon Jung, Alexander Franke
 
-import math
-import cmath
-import numpy as np
+# 2017/2018 
+# Authors: Bernd Lienau, Simon Jung, Alexander Franke
+# published under GNU General Public License v3.0
+# see LICENSE file for further details
+
 import sys
 import time
 
+import math
+
+import numpy as np
 from numpy import sin as sin
 from numpy import cos as cos
 from numpy import tan as tan
@@ -16,24 +19,22 @@ from numpy import arcsin as arcsin
 from numpy import arccos as arccos
 from numpy import arctan as arctan
 from numpy import exp as exp
-
 from numpy.fft import fft as fft
 from numpy.fft import fft2 as fft2
 from numpy import pi as pi
 
+#plots
 from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.gridspec as gridspec
 from pylab import *
- 
+import matplotlib.pyplot as plt
 
-import csv
+ 
 import pandas as pd
 import scipy
 from scipy import integrate as integrate
 import random
 
-
-import matplotlib.pyplot as plt
 import argparse
 
 #Canvas
@@ -41,6 +42,8 @@ from tkinter import *
 
 ####### TODOS ######
 '''
+	- Canvas result update instead of redraw
+
 moeglich:
 	- Uberlagerung von verschiendenen Wellenlaengen
 	- mehrere Gitter
@@ -222,7 +225,7 @@ class nlcmap(LinearSegmentedColormap):
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
 
-def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  ##funktioniert
+def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
 	subArrayX= []
@@ -813,7 +816,8 @@ def Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		  
 	plt.show()
 	
-	
+
+### execute main() when program is called	
 if __name__ == "__main__":
 	main()
 
