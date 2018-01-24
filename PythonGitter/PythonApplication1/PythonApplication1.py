@@ -66,7 +66,7 @@ def main():
 	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--abstand', dest='zs', help='Schirmabstand in cm',default=350)
-	parser.add_argument('--calctype', dest='calctype',help='Waehle aus canvas,dftFft,periodisch,any,griderror)',default='canvas')
+	parser.add_argument('--calctype', dest='calctype',help='Waehle aus default,canvas,periodisch,any,griderror)',default='default')
 	
 	args = parser.parse_args()
 
@@ -123,8 +123,8 @@ def main():
 	if calctype == 'canvas': 
 		# Leinwand aehnlich zu mspaint. Beugungsmuster eines beliebigen Objekts
 		Main_Canvas(wl,zs)
-	elif calctype == 'dftFft':
-		Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
+	elif calctype == 'default':
+		Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny),wl,zs)
 	elif calctype == 'periodisch':
 		Main_Periodisch(nx,ny,ax,ay,dx,dy,wl,zs)
 	elif calctype == 'any':
@@ -204,6 +204,12 @@ def error_matrix(nx,ny):
 			error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
 		error_matrix.append(error_row)
 	return np.array(error_matrix)
+
+
+### formatSecToMillisec(float time)
+### returns: converts entered sec time to ms, rounds and adds Einheit
+def formatSecToMillisec(time):
+	return str(round(time*1000)) + ' ms'
 
 ### class nlcmap()
 ### zur Darstellung der Intensität verwenden wir einen nicht-linearen, diskreten Farbverlauf nach 
@@ -761,60 +767,77 @@ def Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	plt.show()
 	print("Plot Berechnungen dauerten: " + str(time.time() - start_time))
 	
-def Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-	# n  : Anzahl der Spalte
-	# a  : Größe der Spalte
-	# d  : Abstand (egal für Einzelspalt)
-	start_time = time.time()
-	
+def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+		
+	### Init and Parameters for plotting
 	x1  = np.linspace(-5., 5., 1200)
 	y1  = np.linspace(-5., 5., 1200)
-	
 	X,Y = np.meshgrid(x1, y1)
-
-	#Berechnung dft
-	z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	z1 /= z1.max()
-	print("DFT Berechnungen dauerten: " + str(time.time() - start_time))
-	start_time = time.time()
-	
-	## Berechnung analytisch
-	z2 = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	z2 /= z2.max()
-	print("Analytische Berechnungen dauerten: " + str(time.time() - start_time))
-	start_time = time.time()
-	
-	#Berechnung fft 2D
-	XX, YY, z2Df = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-	z2Df/=z2Df.max()
-	
-	print("FFT Berechnungen dauerten: " + str(time.time() - start_time))
-	start_time = time.time()
-	
-	## Farbstufen für das Bild
-	levels_z1 = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
+	levels_screen = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
 	cmap_lin = plt.cm.Reds
-	cmap_nonlin_z1 = nlcmap(cmap_lin, levels_z1)
+	cmap_nonlin = nlcmap(cmap_lin, levels_screen)
+
 	
-	fig, ax = plt.subplots(nrows=1, ncols=3)
+	### Objektebene
+	x_obj = np.array(np.linspace(-max(nx,ny)*max(dx,dy)/2,max(nx,ny)*max(dx,dy)/2,1200))
+	y_obj = x_obj
+	x_obj_mesh, y_obj_mesh = np.meshgrid(x_obj,y_obj)
+	intensity_obj       = Transmission_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,0,error_matrix)
+	intensity_obj_error = Transmission_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
 	
-	plt.subplot(1,3,1)
-	g = plt.contourf(x1,y1,z1,levels=levels_z1,cmap=cmap_nonlin_z1)
-	plt.subplot(1,3,1).set_title("dft ohne Gitterfehler")
-	plt.colorbar()
+
+	### DFT
+	start_time_dft = time.time()
+	intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+	intensity_DFT /= intensity_DFT.max() #normierung
+	total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
+	print("DFT Berechnung dauerte: " + total_time_dft)
 	
-	plt.subplot(1,3,2)
-	f = plt.contourf(x1,y1,z2,levels=levels_z1,cmap=cmap_nonlin_z1)
-	plt.subplot(1,3,2).set_title("analytisch")
-	plt.colorbar()
+
+	### Analyisch
+	start_time_anal = time.time()
+	intensity_anal = interferenz_Gitter_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+	intensity_anal /= intensity_anal.max()
+	total_time_anal = formatSecToMillisec(time.time() - start_time_anal)
+	print("Analytische Berechnung dauerte: " + total_time_anal)
 	
-	plt.subplot(1,3,3)    
-	h = plt.contourf(XX,YY,z2Df,levels=levels_z1,cmap=cmap_nonlin_z1)
-	plt.subplot(1,3,3).set_title("fft")
+
+	### FFT
+	start_time_fft = time.time()
+	XX, YY, intensity_fft = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	intensity_fft/=intensity_fft.max()
+	total_time_fft =  formatSecToMillisec(time.time() - start_time_fft)
+	print("FFT Berechnung dauerte: " + total_time_fft)
+	
+	plt.figure(0)
+
+	# Die drei Objektebenen, die ersten beiden ohne Fehler (da analytisch und dft), der dritte mit Fehler (da fft)
+	plt.subplot2grid((2, 3), (0, 0))
+	plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj, cmap='gray')
+	
+	plt.subplot2grid((2, 3), (0, 1))
+	plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj, cmap='gray')
+	
+	plt.subplot2grid((2, 3), (0, 2))
+	plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
+	
+
+	plt.subplot2grid((2, 3), (1, 0))
+	plt.subplot2grid((2, 3), (1, 0)).set_title("Analytisch. t=" + total_time_anal )
+	plt.contourf(X,Y,intensity_anal,levels=levels_screen,cmap=cmap_nonlin)
 	plt.colorbar()
 
-	print("Plot Berechung dauerte: " + str(time.time() - start_time))
-		  
+	plt.subplot2grid((2, 3), (1, 1))
+	plt.subplot2grid((2, 3), (1, 1)).set_title("DFT. t=" + total_time_dft)
+	plt.contourf(X,Y,intensity_DFT,levels=levels_screen,cmap=cmap_nonlin)
+	plt.colorbar()
+
+	
+	plt.subplot2grid((2, 3), (1, 2))  
+	plt.subplot2grid((2, 3), (1, 2)).set_title("FFT. t=" +total_time_fft)
+	plt.contourf(XX,YY,intensity_fft,levels=levels_screen,cmap=cmap_nonlin)
+	plt.colorbar()
+	  
 	plt.show()
 	
 
