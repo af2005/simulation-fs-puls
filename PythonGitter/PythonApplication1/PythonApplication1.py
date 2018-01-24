@@ -54,8 +54,6 @@ moeglich:
 
 def main():
 	parser = argparse.ArgumentParser(description='This is a python3 module simulating a light pulse with given parameters propagating through different optical components suchas Einzelspalt, Doppelspalt, Gitter mit und ohne Fehlstellen oder Defekten.')
-
-	#parser.add_argument('--dimension', dest='dimension',help='Auf 1 zu setzen für n Spalte, auf 2 für Gitter .',default=2)
 	parser.add_argument('--nx', dest='nx', help='Die Anzahl der Spalte in x-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
 	parser.add_argument('--ny', dest='ny', help='Die Anzahl der Spalte in y-Richtung. Ganzzahlige Zahl zwischen 0 und Unendlich. 0 steht hierbei fuer einen Spalt mit unendlicher Ausdehnung.',default=1)
 	parser.add_argument('--ax', dest='ax', help='Spaltbreite in um',default=3)
@@ -65,7 +63,7 @@ def main():
 	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp. 0 fuer keinen Fehler. 1 fuer zufaellige, kleine Verschiebung jedes Spaltes, 2 fuer 10% Chance fuer jedes Loch, dass es nicht existiert (Fehlstellen)',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlänge in nm',default=780 )
 	parser.add_argument('--zs', dest='zs', help='Schirmabstand in cm',default=350)
-	parser.add_argument('--calctype', dest='calctype',help='Waehle aus default,canvas,periodisch,any,griderror)',default='default')
+	parser.add_argument('--calctype', dest='calctype',help='Waehle aus default,canvas)',default='default')
 	
 	args = parser.parse_args()
 
@@ -124,12 +122,6 @@ def main():
 		Main_Canvas(wl,zs)
 	elif calctype == 'default':
 		Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny,errortype),wl,zs)
-	elif calctype == 'periodisch':
-		Main_Periodisch(nx,ny,ax,ay,dx,dy,wl,zs)
-	elif calctype == 'any':
-		Main_AnyFunction(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny,errortype),wl,zs)
-	elif calctype == 'griderror':
-		Main_compareGridError(nx,ny,ax,ay,dx,dy,errortype,error_matrix(nx,ny,errortype),wl,zs)
 		
 	#__________________________________________________________________
 	# Ende der main()
@@ -616,10 +608,7 @@ def Main_Canvas(wl,zs):
 	def getNeightbourPixels(x0,y0):
 		x0 = int(x0)
 		y0 = int(y0)
-		
-		#
-		#abstand(int x0,int y0, int x, int y)
-		
+				
 		tempx = x0-drawradius
 		tempy = y0-drawradius
 
@@ -781,9 +770,3 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 ### execute main() when program is called	
 if __name__ == "__main__":
 	main()
-
-
-
-
-
-
