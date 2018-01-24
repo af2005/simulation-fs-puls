@@ -225,7 +225,6 @@ class nlcmap(LinearSegmentedColormap):
 ####__________________________________________________________________
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
-
 def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
@@ -775,8 +774,10 @@ def Main_CompareDftFft(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	X,Y = np.meshgrid(x1, y1)
 
 	#Berechnung dft
-	z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	z1 = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 	z1 /= z1.max()
+	print("DFT Berechnungen dauerten: " + str(time.time() - start_time))
+	start_time = time.time()
 	
 	## Berechnung analytisch
 	z2 = interferenz_Nspalt_analytisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
