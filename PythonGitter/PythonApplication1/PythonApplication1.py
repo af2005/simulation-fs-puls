@@ -595,7 +595,7 @@ def interferenz_Gitter_analytisch(X,Y,nx,ny,ax,ay,dx,dy,wl,zs):
 ####__________________________________________________________________
 
 def Main_Canvas(wl,zs):
-	canvas_size = 500 		#Groesse der quadratischen Leinwand
+	canvas_size = 800 		#Groesse der quadratischen Leinwand
 	drawradius = 10			#Stiftdicke
 
 	# wir legen ein Matrix an (Liste in Liste) mit den Dimenstion canvas_size x canvas_size
