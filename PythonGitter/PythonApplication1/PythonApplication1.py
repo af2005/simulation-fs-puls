@@ -112,7 +112,7 @@ def main():
 	matplotlib.rcParams.update({'font.size': 30}) ## change font size
 
 	
-	if nx==0 and ny==0:
+	if nx==0 or ny==0:
 		print('Ohne Gitter gibt es keine Berechnung...')
 		sys.exit(0)
 
@@ -195,7 +195,7 @@ def error_matrix(nx,ny,errortype):
 		for i in range(ny):
 			error_row=[]
 			for j in range(nx):
-				if(random.randint(0, 100) > 10):
+				if(random.randint(0, 100) > 15):
 					error_row.append([[1,1,1,1]])
 				else:
 					error_row.append([[0,0,0,0]])
@@ -758,13 +758,13 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		plt.subplot2grid((1,3), (0, 0))
 		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
 
+		'''
 		plt.subplot2grid((1, 3), (0, 1))
 		plt.subplot2grid((1, 3), (0, 1)).set_title("DFT. t=" + total_time_dft)
 		plt.contourf(X,Y,intensity_DFT,levels=levels_screen,cmap=cmap_nonlin)
 		plt.colorbar()
-
-		plt.subplot2grid((1,3), (0, 2))
-		plt.subplot2grid((1,3), (0, 2)).set_title("FFT. t=" +total_time_fft)
+		'''
+		plt.subplot2grid((1,3), (0, 1),colspan=2).set_title("FFT. t=" +total_time_fft)
 		plt.contourf(XX,YY,intensity_fft,levels=levels_screen,cmap=cmap_nonlin)
 		plt.colorbar()
 	
