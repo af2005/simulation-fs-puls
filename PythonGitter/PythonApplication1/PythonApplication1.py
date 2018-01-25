@@ -43,13 +43,13 @@ from tkinter import *
 ####### TODOS ######
 '''
 	- Canvas result update instead of redraw
+	- DFT ohne Ausnutzung von Symmetrien
+	- Ruecktransformation des Nikolaushauses
 
 moeglich:
 	- Uberlagerung von verschiendenen Wellenlaengen
 	- mehrere Gitter
 	- Einfallswinkel von 90 deg verschieden
-
-
 '''
 
 def main():
