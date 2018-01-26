@@ -259,51 +259,23 @@ def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):
 	return Ztmp
 
 	
-def fourierNspaltAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##gibt 1D richtiges Ergebnis
-	## bietet die Möglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
-	## beliebige Funktion für das Gitter einzusetzen
-	
-	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
-	#beim Integrieren bzw bei der fft schief geht.
-	subArrayX= []
-	subArrayY= []
-	
-	## Teile xArray an Mittelpunkten zwischen den Spalten in Teile von
-	##     [:-(nx-2)/2*dx][-(nx-2)/2*dx:(i-(nx-2)/2*dx)][...] i in range(nx-1)
-	## Teile yArray an Mittelpunkten zwischen den Spalten in Teile von
-	##     [:-(ny-2)/2*dy][-(ny-2)/2*dy:(j-(ny-2)/2*dy)][...] j in range(ny-1)
-	## Erhalte somit nx*ny Teilstücke des Gitters, in denen sich jeweils ein Spalt befindet
-	## Integriere für jeden einzelnen Spalt separat, fülle die restlichen Gebiete des Ergebnisses mit 1
-	## multipliziere die einzelnen Spaltfouriertransformierten um das Gesamtergebnis zu erhalten
-	Ztmp=[]
-	
-	for i in range(nx):
-		for j in range(ny):
-			for x in xArray:
-				if nx==0:
-					subArrayX.append(1)
-				elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
-					subArrayX.append(float(fourierNspaltIntegrateAnyFunction(x,nx,ax,dx,errortype,error_matrix[j,:,0],wl,zs)))
-				else:
-					subArrayX.append(0)
-			
-			for y in yArray:
-				if ny==0:
-					subArrayY.append(1)
-				elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
-					subArrayY.append(float(fourierNspaltIntegrateAnyFunction(y,ny,ay,dy,errortype,error_matrix[:,i,1],wl,zs)))
-				else:
-					subArrayY.append(0)
-					
-			XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
-			Ztmp.append(XX*YY)
-			subArrayX= []
-			subArrayY= []
-	
-	Ztotal=Ztmp[0]
-	for k in range(1,len(Ztmp)):
-		Ztotal+=Ztmp[k]
-	return Ztotal
+def fourierGitterAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+    ## bietet die Möglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
+    ## beliebige Funktion für das Gitter einzusetzen
+    
+    #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
+    #beim Integrieren bzw bei der fft schief geht.
+    Ztotal=[]
+    subArrayX=[]
+    
+    for y in yArray:
+        print(y)
+        for x in xArray:
+            subArrayX.append(float(fourierGitterIntegrateAnyFunction(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)))
+        Ztotal.append(subArrayX)
+        subArrayX=[]
+        
+    return np.array(Ztotal)
 
 def fftCanvas2D_XYZ(imagearray,wl,zs): ## 1 pixel = 0.1 um
 	## 2D Berechnung
@@ -430,7 +402,34 @@ def fourierNspaltIntegrateAnyFunction(x,n,a,d,errortype,error_array,wl,zs):
 	integral =  scipy.real(np.square(np.multiply(n,integral)))
 	return integral
 
+def fourierGitterIntegrateAnyFunction(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+    # Fouriertransformierte von Transmission_Gitter
+    
+    ## bietet die Möglichkeit eine beliebige Funktion für das Gitter in 'Transmission_n_Spalte(y,n,a,d)' einzusetzen
+    
+    u = k(wl)*sin(arctan(x/zs))
+    v = k(wl)*sin(arctan(y/zs))
+    #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
+    def f(x,y):
+        return Transmission_n_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
+    
+    def real_f(x,y):
+        return scipy.real(f(x,y))
+    def imag_f(x,y):
+        return scipy.imag(f(x,y))
 
+    
+    real_integral = integrate.dblquad(real_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+    imag_integral = integrate.dblquad(imag_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+    
+    #scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
+    #matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
+    real_integral =  scipy.real(np.square(real_integral))
+    imag_integral =  scipy.real(np.square(imag_integral))
+    
+    return (real_integral + i()*imag_integral)
+	
+	
 def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
 	# Fouriertransformierte von Transmission_Einzelspalt
 	# Siehe Glg 29 im Theory doc.pdf
@@ -544,7 +543,7 @@ def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 				if ny==0:
 					subArrayY.append(1)
 				elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
-					subArrayY.append(Transmission_n_Spalte(y,ny,ay,dy,errortype,error_matrix[:,i,0]))
+					subArrayY.append(Transmission_n_Spalte(y,ny,ay,dy,errortype,error_matrix[:,i,1]))
 				else:
 					subArrayY.append(0)
 					
@@ -568,6 +567,7 @@ def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 def interferenz_einzelspalt_analytisch(X,a,wl,zs):
 	alphax = arctan(X/zs)
 	return (((a*sinc(0.5*a*k(wl)*sin(alphax))))**2)
+	
 def interferenz_Nspalt_analytisch(X,n,a,d,wl,zs):
 	return_vec = []
 	for x in X:
@@ -702,7 +702,11 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	
 	### DFT
 	start_time_dft = time.time()
-	intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+	intensity_DFT  = fourierGitterAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	# faster algorithm for a grid without errors, using symmetries and the known result of
+	#   the fourier transformation of multiple slits compared to a single slit and thus being
+	#   much faster
+	#intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 	intensity_DFT /= intensity_DFT.max() #normierung
 	total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
 	print("DFT Berechnung dauerte: " + total_time_dft)
