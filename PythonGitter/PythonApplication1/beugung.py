@@ -284,21 +284,21 @@ def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):
 
 	
 def fourierGitterAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-    ## bietet die Moeglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
-    ## beliebige Funktion fuer das Gitter einzusetzen
-    
-    #Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
-    #beim Integrieren bzw bei der fft schief geht.
-    Ztotal=[]
-    subArrayX=[]
-    
-    for y in yArray:
-        for x in xArray:
-            subArrayX.append(float(fourierGitterIntegrateAnyFunction(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)))
-        Ztotal.append(subArrayX)
-        subArrayX=[]
-        
-    return np.array(Ztotal)
+	## bietet die Moeglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
+	## beliebige Funktion fuer das Gitter einzusetzen
+	
+	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
+	#beim Integrieren bzw bei der fft schief geht.
+	Ztotal=[]
+	subArrayX=[]
+	
+	for y in yArray:
+		for x in xArray:
+			subArrayX.append(float(fourierGitterIntegrateAnyFunction(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)))
+		Ztotal.append(subArrayX)
+		subArrayX=[]
+		
+	return np.array(Ztotal)
 
 def fftCanvas2D_XYZ(imagearray,wl,zs): ## 1 pixel = 0.1 um
 	## 2D Berechnung
@@ -426,31 +426,29 @@ def fourierNspaltIntegrateAnyFunction(xSchirm,n,a,d,errortype,error_array,wl,zs)
 	return integral
 
 def fourierGitterIntegrateAnyFunction(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-    # Fouriertransformierte von Trans_Gitter
-    
-    ## bietet die Moeglichkeit eine beliebige Funktion fuer das Gitter in 'Trans_NSpalt(y,n,a,d)' einzusetzen
-    
-    u = k(wl)*sin(arctan(xSchirm/zs))
-    v = k(wl)*sin(arctan(ySchirm/zs))
-    #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-    def f(x,y):
-        return Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
-    
-    def real_f(x,y):
-        return scipy.real(f(x,y))
-    def imag_f(x,y):
-        return scipy.imag(f(x,y))
+	# Fouriertransformierte von Trans_Gitter
+	
+	## bietet die Moeglichkeit eine beliebige Funktion fuer das Gitter in 'Trans_NSpalt(y,n,a,d)' einzusetzen
+	
+	u = k(wl)*sin(arctan(xSchirm/zs))
+	v = k(wl)*sin(arctan(ySchirm/zs))
+	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
+	def f(x,y):
+		return Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
+	
+	def real_f(x,y):
+		return scipy.real(f(x,y))
+	def imag_f(x,y):
+		return scipy.imag(f(x,y))
 
-    
-    real_integral = integrate.dblquad(real_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
-    imag_integral = integrate.dblquad(imag_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
-    
-    #scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
-    #matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
-    real_integral =  scipy.real(np.square(real_integral))
-    imag_integral =  scipy.real(np.square(imag_integral))
-    
-    return (real_integral + imag_integral)
+	
+	real_integral = integrate.dblquad(real_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+	imag_integral = integrate.dblquad(imag_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+	
+	totalint = (real_integral + i()*imag_integral)
+	totalint =  scipy.real(np.square(totalint))
+	
+	return 
 	
 	
 def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
@@ -546,18 +544,18 @@ def Trans_Gitter_float_ALEX(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	return alextry
 
 def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-    
-    trans=0.0
-    for i in range(max(nx,1)):
-        for j in range(max(ny,1)):
-            if errortype==0:
-                trans+=Trans_1Spalt(x-dx*(i-nx/2+0.5),ax)*Trans_1Spalt(y-dy*(j-ny/2+0.5),ay)
-            elif errortype==1:
-                # soll jede einzelne Koordinate (x,y) nehmen und schauen, ob dort Durchlass (0,1) ist
-                # Transmission in x-Richtung am Punkt (x,y) für alle Spalte (nx,ny)       *  Transmission in y-Richtung am Punkt (x,y) für alle Spalte (nx,ny)
-                trans+=Trans_1Spalt(x+error_matrix[j,i,0,0]*ax-dx*(i-nx/2+0.5),ax*error_matrix[j,i,0,1])*Trans_1Spalt(y+error_matrix[j,i,1,0]*ay-dy*(j-ny/2+0.5),ay*error_matrix[j,i,1,1])
-            
-    return trans
+	
+	trans=0.0
+	for i in range(max(nx,1)):
+		for j in range(max(ny,1)):
+			if errortype==0:
+				trans+=Trans_1Spalt(x-dx*(i-nx/2+0.5),ax)*Trans_1Spalt(y-dy*(j-ny/2+0.5),ay)
+			elif errortype==1:
+				# soll jede einzelne Koordinate (x,y) nehmen und schauen, ob dort Durchlass (0,1) ist
+				# Transmission in x-Richtung am Punkt (x,y) für alle Spalte (nx,ny)       *  Transmission in y-Richtung am Punkt (x,y) für alle Spalte (nx,ny)
+				trans+=Trans_1Spalt(x+error_matrix[j,i,0,0]*ax-dx*(i-nx/2+0.5),ax*error_matrix[j,i,0,1])*Trans_1Spalt(y+error_matrix[j,i,1,0]*ay-dy*(j-ny/2+0.5),ay*error_matrix[j,i,1,1])
+			
+	return trans
 	
 def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 	# Returns the transmission for a periodic grid as a matrix with 0/1
