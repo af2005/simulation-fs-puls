@@ -446,9 +446,9 @@ def fourierGitterIntegrateAnyFunction(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortyp
 	imag_integral = integrate.dblquad(imag_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
 	
 	totalint = (real_integral + i()*imag_integral)
-	totalint =  scipy.real(np.square(totalint))
+	return np.square(totalint)
 	
-	return 
+	 
 	
 	
 def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
