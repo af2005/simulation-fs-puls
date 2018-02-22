@@ -545,17 +545,17 @@ def Trans_Gitter_float_ALEX(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		print(str(alextry))
 	return alextry
 
-def Transmission_n_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     
     trans=0.0
     for i in range(max(nx,1)):
         for j in range(max(ny,1)):
             if errortype==0:
-                trans+=Transmission_Einzelspalt(x-dx*(i-nx/2+0.5),ax)*Transmission_Einzelspalt(y-dy*(j-ny/2+0.5),ay)
+                trans+=Trans_1Spalt(x-dx*(i-nx/2+0.5),ax)*Trans_1Spalt(y-dy*(j-ny/2+0.5),ay)
             elif errortype==1:
                 # soll jede einzelne Koordinate (x,y) nehmen und schauen, ob dort Durchlass (0,1) ist
                 # Transmission in x-Richtung in am Punkt (x,y) für alle Spalte (nx,ny)       *  Transmission in y-Richtung in am Punkt (x,y) für alle Spalte (nx,ny)
-                trans+=Transmission_Einzelspalt(x+error_matrix[j,i,0,0]*ax-dx*(i-nx/2+0.5),ax*error_matrix[j,i,0,1])*Transmission_Einzelspalt(y+error_matrix[j,i,1,0]*ay-dy*(j-ny/2+0.5),ay*error_matrix[j,i,1,1])
+                trans+=Trans_1Spalt(x+error_matrix[j,i,0,0]*ax-dx*(i-nx/2+0.5),ax*error_matrix[j,i,0,1])*Trans_1Spalt(y+error_matrix[j,i,1,0]*ay-dy*(j-ny/2+0.5),ay*error_matrix[j,i,1,1])
             
     return trans
 	
@@ -725,7 +725,7 @@ def Main_Canvas(wl,zs):
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		
 	### Init and Parameters for plotting
-	resolution = 100
+	resolution = 50
 	x1  = np.linspace(-5., 5., resolution)
 	y1  = np.linspace(-5., 5., resolution)
 	X,Y = np.meshgrid(x1, y1)
