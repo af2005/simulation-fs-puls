@@ -62,6 +62,7 @@ def main():
 	parser.add_argument('--errortype', dest='errortype', help='Gitterfehlertyp. 0 fuer keinen Fehler. 1 fuer zufaellige, kleine Verschiebung jedes Spaltes, 2 fuer 15% Chance fuer jedes Loch, dass es nicht existiert (Fehlstellen)',default=0)
 	parser.add_argument('--wl', dest='wl',help='Wellenlaenge in nm',default=780 )
 	parser.add_argument('--zs', dest='zs', help='Schirmabstand in cm',default=350)
+	parser.add_argument('--dft', dest='dft', help='Wenn dieser Wert auf true gesetzt wird, wird zusaetzlich eine DFT durchgefuehrt, die unter Umstaenden sehr lange dauern kann. Der Defaultwert ist false.',default='false')
 	parser.add_argument('--canvas', dest='canvas',help='Wird dieser Wert auf true gesetzt, wird die Moeglichkeit gegeben anstelle eines Gitter eine Freihandzeichnung zu erstellen. Die meisten anderen Parameter sind dann unerheblich.',default='false')
 	
 	args = parser.parse_args()
@@ -102,6 +103,7 @@ def main():
 	ay = int(args.ay)  * 1e-6
 	dx = int(args.dx)  * 1e-6
 	dy = int(args.dy)  * 1e-6
+	dft = str(args.dft)
 	errortype = int(args.errortype)
 	wl = int(args.wl) * 1e-9
 	zs = int(args.zs) * 1e-2
@@ -120,7 +122,7 @@ def main():
 		# Leinwand aehnlich zu mspaint. Beugungsmuster eines beliebigen Objekts
 		Main_Canvas(wl,zs)
 	elif canvas == 'false':
-		Main_Default(nx,ny,ax,ay,dx,dy,errortype,Err_matrix_init(nx,ny,errortype),wl,zs)
+		Main_Default(nx,ny,ax,ay,dx,dy,errortype,Err_matrix_init(nx,ny,errortype),wl,zs,dft)
 	
 
 	#__________________________________________________________________
@@ -143,7 +145,6 @@ def Err_matrix_init(nx,ny,errortype):
 				else:
 					error_row.append([[0,0,0,0]])
 			matrix.append(error_row)
-		return np.array(matrix)
 	else: #error type 1
 		matrix = []
 		for i in range(ny):
@@ -151,7 +152,8 @@ def Err_matrix_init(nx,ny,errortype):
 			for j in range(nx):
 				error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
 			matrix.append(error_row)
-		return np.array(matrix)
+	
+	return np.array(matrix)
 
 
 ####__________________________________________________________________
@@ -534,7 +536,7 @@ def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 			if ny==0:
 				ytmp = 1
 			elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
-				ytmp = Trans_NSpalt(y,ny,ay,dy,errortype,error_matrix[:,i,1])
+				ytmp = Trans_NSpalt(y,ny,ay,dy,errortype,error_matrix[:,i,1]) #why is [:,i,1] not [:,i,0] ??
 			else:
 				ytmp = 0
 					
@@ -558,7 +560,7 @@ def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 	## Integriere fuer jeden einzelnen Spalt separat, fuelle die restlichen Gebiete des Ergebnisses mit 1
 	## multipliziere die einzelnen Spaltfouriertransformierten um das Gesamtergebnis zu erhalten
 	Ztmp=[]
-	
+
 	for i in range(max(nx,1)):
 		for j in range(max(ny,1)):
 			for x in xArray:
@@ -572,7 +574,7 @@ def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 				if ny==0:
 					subArrayY.append(1)
 				elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
-					subArrayY.append(Trans_NSpalt(y,ny,ay,dy,errortype,error_matrix[:,i,1]))
+					subArrayY.append(Trans_NSpalt(y,ny,ay,dy,errortype,error_matrix[:,i,0]))
 				else:
 					subArrayY.append(0)
 					
@@ -706,10 +708,10 @@ def Main_Canvas(wl,zs):
 	'''
 
 
-def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		
 	### Init and Parameters for plotting
-	resolution = 20
+	resolution = 100
 	x1  = np.linspace(-5., 5., resolution)
 	y1  = np.linspace(-5., 5., resolution)
 	X,Y = np.meshgrid(x1, y1)
@@ -725,16 +727,17 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	intensity_obj       = Trans_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,0,error_matrix)
 	intensity_obj_error = Trans_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
 	
-	### DFT
-	start_time_dft = time.time()
-	intensity_DFT  = fourierGitterAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-	# faster algorithm for a grid without errors, using symmetries and the known result of
-	#   the fourier transformation of multiple slits compared to a single slit and thus being
-	#   much faster
-	#intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-	intensity_DFT /= intensity_DFT.max() #normierung
-	total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
-	print("DFT Berechnung dauerte: " + total_time_dft)
+	if dft == "true":
+		### DFT
+		start_time_dft = time.time()
+		intensity_DFT  = fourierGitterAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+		# faster algorithm for a grid without errors, using symmetries and the known result of
+		#   the fourier transformation of multiple slits compared to a single slit and thus being
+		#   much faster
+		#intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		intensity_DFT /= intensity_DFT.max() #normierung
+		total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
+		print("DFT Berechnung dauerte: " + total_time_dft)
 
 	if errortype == 0:
 		### Analyisch
@@ -771,10 +774,14 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		plt.contourf(X,Y,intensity_anal,levels=levels_screen,cmap=cmap_nonlin)
 		plt.colorbar()
 
-		plt.subplot2grid((2, 3), (1, 1))
-		plt.subplot2grid((2, 3), (1, 1)).set_title("DFT. t=" + total_time_dft)
-		plt.contourf(X,Y,intensity_DFT,levels=levels_screen,cmap=cmap_nonlin)
-		plt.colorbar()
+		if dft == "true":
+			plt.subplot2grid((2, 3), (1, 1))
+			plt.subplot2grid((2, 3), (1, 1)).set_title("DFT. t=" + total_time_dft)
+			plt.contourf(X,Y,intensity_DFT,levels=levels_screen,cmap=cmap_nonlin)
+			plt.colorbar()
+		else:
+			plt.subplot2grid((2, 3), (1, 1))
+			plt.subplot2grid((2, 3), (1, 1)).set_title("DFT not calculated")
 
 		
 		plt.subplot2grid((2, 3), (1, 2))  
