@@ -410,12 +410,12 @@ def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs):
 		
 	return X_Schirm, z1Df[index_low:index_high]
 	
-def fourierNspaltIntegrateAnyFunction(x,n,a,d,errortype,error_array,wl,zs):
+def fourierNspaltIntegrateAnyFunction(xSchirm,n,a,d,errortype,error_array,wl,zs):
 	# Fouriertransformierte von Trans_Gitter
 	
 	## bietet die Moeglichkeit eine beliebige Funktion fuer das Gitter in 'Trans_NSpalt(y,n,a,d)' einzusetzen
 	
-	u = k(wl)*sin(arctan(x/zs))
+	u = k(wl)*sin(arctan(xSchirm/zs))
 	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
 	f = lambda y:  Trans_NSpalt(y,n,a,d,errortype,error_array)*exp(-i()*u*y) 
 
@@ -425,13 +425,13 @@ def fourierNspaltIntegrateAnyFunction(x,n,a,d,errortype,error_array,wl,zs):
 	integral =  scipy.real(np.square(np.multiply(n,integral)))
 	return integral
 
-def fourierGitterIntegrateAnyFunction(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def fourierGitterIntegrateAnyFunction(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
     # Fouriertransformierte von Trans_Gitter
     
     ## bietet die Moeglichkeit eine beliebige Funktion fuer das Gitter in 'Trans_NSpalt(y,n,a,d)' einzusetzen
     
-    u = k(wl)*sin(arctan(x/zs))
-    v = k(wl)*sin(arctan(y/zs))
+    u = k(wl)*sin(arctan(xSchirm/zs))
+    v = k(wl)*sin(arctan(ySchirm/zs))
     #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
     def f(x,y):
         return Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
@@ -554,7 +554,7 @@ def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
                 trans+=Trans_1Spalt(x-dx*(i-nx/2+0.5),ax)*Trans_1Spalt(y-dy*(j-ny/2+0.5),ay)
             elif errortype==1:
                 # soll jede einzelne Koordinate (x,y) nehmen und schauen, ob dort Durchlass (0,1) ist
-                # Transmission in x-Richtung in am Punkt (x,y) für alle Spalte (nx,ny)       *  Transmission in y-Richtung in am Punkt (x,y) für alle Spalte (nx,ny)
+                # Transmission in x-Richtung am Punkt (x,y) für alle Spalte (nx,ny)       *  Transmission in y-Richtung am Punkt (x,y) für alle Spalte (nx,ny)
                 trans+=Trans_1Spalt(x+error_matrix[j,i,0,0]*ax-dx*(i-nx/2+0.5),ax*error_matrix[j,i,0,1])*Trans_1Spalt(y+error_matrix[j,i,1,0]*ay-dy*(j-ny/2+0.5),ay*error_matrix[j,i,1,1])
             
     return trans
