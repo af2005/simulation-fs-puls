@@ -291,7 +291,6 @@ def fourierGitterAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
     subArrayX=[]
     
     for y in yArray:
-        print(y)
         for x in xArray:
             subArrayX.append(float(fourierGitterIntegrateAnyFunction(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)))
         Ztotal.append(subArrayX)
@@ -433,7 +432,7 @@ def fourierGitterIntegrateAnyFunction(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matr
     v = k(wl)*sin(arctan(y/zs))
     #lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
     def f(x,y):
-        return Trans_Gitter(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
+        return Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
     
     def real_f(x,y):
         return scipy.real(f(x,y))
@@ -518,6 +517,31 @@ def Trans_NSpalt(x,n,a,d,errortype,error_array):
 			gesamttransmission += Trans_1Spalt(x-d*(i-n/2+0.5),a) * int(error_array[i][0])
 
 	return gesamttransmission
+def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+	Ztmp=[]
+	xtmp = 0.
+	ytmp = 0.
+
+	for i in range(max(nx,1)):
+		for j in range(max(ny,1)):
+			if nx==0:
+				xtmp = 1
+			elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
+				xtmp = Trans_NSpalt(x,nx,ax,dx,errortype,error_matrix[j,:,0])
+			else:
+				xtmp = 0
+
+			if ny==0:
+				ytmp = 1
+			elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
+				ytmp = Trans_NSpalt(y,ny,ay,dy,errortype,error_matrix[:,i,1])
+			else:
+				ytmp = 0
+					
+	alextry = xtmp*ytmp
+	if alextry != 0:
+		print(str(alextry))
+	return alextry
 
 def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 	# Returns the transmission for a periodic grid as a matrix with 0/1
@@ -685,7 +709,7 @@ def Main_Canvas(wl,zs):
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		
 	### Init and Parameters for plotting
-	resolution = 100
+	resolution = 20
 	x1  = np.linspace(-5., 5., resolution)
 	y1  = np.linspace(-5., 5., resolution)
 	X,Y = np.meshgrid(x1, y1)
