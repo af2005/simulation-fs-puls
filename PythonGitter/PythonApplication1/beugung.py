@@ -519,7 +519,7 @@ def Trans_NSpalt(x,n,a,d,errortype,error_array):
 			gesamttransmission += Trans_1Spalt(x-d*(i-n/2+0.5),a) * int(error_array[i][0])
 
 	return gesamttransmission
-def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def Trans_Gitter_float_ALEX(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	Ztmp=[]
 	xtmp = 0.
 	ytmp = 0.
@@ -545,6 +545,20 @@ def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		print(str(alextry))
 	return alextry
 
+def Transmission_n_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+    
+    trans=0.0
+    for i in range(max(nx,1)):
+        for j in range(max(ny,1)):
+            if errortype==0:
+                trans+=Transmission_Einzelspalt(x-dx*(i-nx/2+0.5),ax)*Transmission_Einzelspalt(y-dy*(j-ny/2+0.5),ay)
+            elif errortype==1:
+                # soll jede einzelne Koordinate (x,y) nehmen und schauen, ob dort Durchlass (0,1) ist
+                # Transmission in x-Richtung in am Punkt (x,y) für alle Spalte (nx,ny)       *  Transmission in y-Richtung in am Punkt (x,y) für alle Spalte (nx,ny)
+                trans+=Transmission_Einzelspalt(x+error_matrix[j,i,0,0]*ax-dx*(i-nx/2+0.5),ax*error_matrix[j,i,0,1])*Transmission_Einzelspalt(y+error_matrix[j,i,1,0]*ay-dy*(j-ny/2+0.5),ay*error_matrix[j,i,1,1])
+            
+    return trans
+	
 def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 	# Returns the transmission for a periodic grid as a matrix with 0/1
 	# to plot it with the contourplot-fct or use it for the fft2 algorithm
