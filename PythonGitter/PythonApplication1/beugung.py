@@ -450,7 +450,7 @@ def fourierGitterIntegrateAnyFunction(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortyp
     real_integral =  scipy.real(np.square(real_integral))
     imag_integral =  scipy.real(np.square(imag_integral))
     
-    return (real_integral + i()*imag_integral)
+    return (real_integral + imag_integral)
 	
 	
 def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
