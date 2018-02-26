@@ -11,6 +11,9 @@ import time
 
 import math
 
+from numba import jit
+
+
 import numpy as np
 from numpy import sin as sin
 from numpy import cos as cos
@@ -171,6 +174,7 @@ def i():
 
 ### abstandZweiterPkte(int x0, int y0, int x, int y)
 ### returns: Abstand des Punktes (x,y) zum Punkt (x0,y0) auf einer 2D Ebene
+@jit
 def abstandZweierPkte(x0,y0,x,y):
 	return round(math.sqrt((x-x0)**2 + (y-y0)**2))
 
@@ -464,13 +468,13 @@ def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
 ####__________________________________________________________________
 #### Transmissionsfunktion verschiedener Objekte
 ####__________________________________________________________________
-
+@jit
 def Transmission_Einzelspalt(x,a):
 	if math.fabs(x) <= a/2:
 		return 1
 	else:
 		return 0
-
+@jit
 def Transmission_Lochblende(rho,R):
 	#einzelnes Loch mit Radius R
 	#Verwende Polarkoordinaten rho,theta 
@@ -478,7 +482,7 @@ def Transmission_Lochblende(rho,R):
 		return 1
 	else: 
 		return 0
-	
+@jit
 def Transmission_Mittelpunkte(n,d):
 	mittelpunkte = []
 	i = 1
@@ -514,7 +518,7 @@ def Transmission_n_Spalte(x,n,a,d,errortype,error_array):
 			gesamttransmission += Transmission_Einzelspalt(x-d*(i-n/2+0.5),a) * int(error_array[i][0])
 
 	return gesamttransmission
-
+@jit
 def Transmission_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 	# Returns the transmission for a periodic grid as a matrix with 0/1
 	# to plot it with the contourplot-fct or use it for the fft2 algorithm
