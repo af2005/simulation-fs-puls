@@ -110,7 +110,7 @@ def main():
 	canvas = str(args.canvas)
 	
 	
-	matplotlib.rcParams.update({'font.size': 30}) ## change font size
+	matplotlib.rcParams.update({'font.size': 20}) ## change font size
 
 	
 	if nx==0 or ny==0:
@@ -282,10 +282,23 @@ def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):
 
 	return Ztmp
 
+def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
+	u = k(wl)*sin(arctan(x/zs))
+	f = lambda y:  Trans_1Spalt(y,a) *exp(-i()*u*y) 
+	r = 0
 	
+	mittelpunkteDerLoecher = NSpalt_Mittelpunkte(n,d)
+	for pkt in mittelpunkteDerLoecher:
+		r = r + (exp(i()*u*pkt))
+
+	if(n==1):
+		r = 1
+	integral = complex_int(f,-a,a)
+	integral =  scipy.real(np.square(n * np.multiply(integral,r)))
+	return integral
+
 def fourierGitterAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-	## bietet die Moeglichkeit in 'fourierNspaltIntegrateWithWholeTransmissionFunction(x,nx,ax,dx,wl,zs)' eine
-	## beliebige Funktion fuer das Gitter einzusetzen
+	## bietet die Moeglichkeit beliebige Funktion fuer das Gitter einzusetzen
 	
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
@@ -300,21 +313,38 @@ def fourierGitterAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
 		
 	return np.array(Ztotal)
 
-def fftCanvas2D_XYZ(imagearray,wl,zs): ## 1 pixel = 0.1 um
-	## 2D Berechnung
-	d = 1e-6
-	n = 1
-	a = 1e-6
-	N = 800 ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
-	x_Spalt = np.array(np.linspace(-N/2*1e-7,N/2*1e-7,N))   ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-	y_Spalt = np.array(np.linspace(-N/2*1e-7,N/2*1e-7,N))   ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+def fourierGitterIntegrateAnyFunction(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+	# Fouriertransformierte von Trans_Gitter
 	
-	z2D = np.hstack((np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2))), imagearray,
-					 np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2)))))
-	z2D = np.vstack((np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1]))), z2D,
-					 np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1])))))
+	## bietet die Moeglichkeit eine beliebige Funktion fuer das Gitter in 'Trans_NSpalt(y,n,a,d)' einzusetzen
 	
-	deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist fuer x- und y-Richtung gleich
+	u = k(wl)*sin(arctan(xSchirm/zs))
+	v = k(wl)*sin(arctan(ySchirm/zs))
+	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
+	def f(x,y):
+		return Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
+	
+	def real_f(x,y):
+		return scipy.real(f(x,y))
+	def imag_f(x,y):
+		return scipy.imag(f(x,y))
+
+	
+	real_integral = integrate.dblquad(real_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+	imag_integral = integrate.dblquad(imag_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+	
+	totalint = (real_integral + i()*imag_integral)
+	return np.square(totalint)
+
+def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs):
+	datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
+	while(datapoints*wl/4/nx/dx/10<0.82*2):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+		datapoints*=2                                     ## 0.82 fuer Plot bis +-5m
+	N = datapoints+1                                      ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+	
+	x_Spalt = np.array(np.linspace(-dx*nx*10,dx*nx*10,N)) ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+	
+	deltax = (x_Spalt[1]-x_Spalt[0])
 	fa = 1.0/deltax #Nyquist-Frequenz
 	Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
 	# zurueckgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
@@ -322,17 +352,20 @@ def fftCanvas2D_XYZ(imagearray,wl,zs): ## 1 pixel = 0.1 um
 	# unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
 	# so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehoert.
 	# So wird Xf berechnet, welches jedem Intensitaetswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
-	Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
-
-	index_low =  np.argmax(Xf>-5.0) #Beschraenke den Plot auf -5m bis +5m auf dem Screen
+	
+	index_low = np.argmax(Xf>-5.0) #Beschraenke den Plot auf -5m bis +5m auf dem Screen
 	index_high = np.argmax(Xf>5.0)
 	if index_high==0:
-		index_high = len(Xf)
-	X_Schirm, Y_Schirm = np.meshgrid(Xf,Yf)#[index_low:index_high],Yf[index_low:index_high])
+		index_high=len(Xf)
+	X_Schirm = Xf[index_low:index_high]
 	
-	z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N)) #[index_low:index_high,index_low:index_high]
-	return X_Schirm, Y_Schirm, z2Df
-
+	## 1D Berechnung
+	Transmission_X = []
+	for x in x_Spalt:
+		Transmission_X.append(Trans_NSpalt(x,nx,ax,dx,errortype,error_array))
+	z1Df = fftshift(np.square(np.abs(fft(Transmission_X))*2/N))
+		
+	return X_Schirm, z1Df[index_low:index_high]
 
 def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimmt, Skalierung noch nicht
 		
@@ -379,37 +412,6 @@ def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisf
 		z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
 	return X_Schirm, Y_Schirm, z2Df
 
-def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs):
-	datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-	while(datapoints*wl/4/nx/dx/10<0.82*2):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
-		datapoints*=2                                     ## 0.82 fuer Plot bis +-5m
-	N = datapoints+1                                      ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
-	
-	x_Spalt = np.array(np.linspace(-dx*nx*10,dx*nx*10,N)) ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-	
-	deltax = (x_Spalt[1]-x_Spalt[0])
-	fa = 1.0/deltax #Nyquist-Frequenz
-	Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
-	# zurueckgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
-	# hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
-	# unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
-	# so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehoert.
-	# So wird Xf berechnet, welches jedem Intensitaetswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
-	
-	index_low = np.argmax(Xf>-5.0) #Beschraenke den Plot auf -5m bis +5m auf dem Screen
-	index_high = np.argmax(Xf>5.0)
-	if index_high==0:
-		index_high=len(Xf)
-	X_Schirm = Xf[index_low:index_high]
-	
-	## 1D Berechnung
-	Transmission_X = []
-	for x in x_Spalt:
-		Transmission_X.append(Trans_NSpalt(x,nx,ax,dx,errortype,error_array))
-	z1Df = fftshift(np.square(np.abs(fft(Transmission_X))*2/N))
-		
-	return X_Schirm, z1Df[index_low:index_high]
-	
 def fourierNspaltIntegrateAnyFunction(xSchirm,n,a,d,errortype,error_array,wl,zs):
 	# Fouriertransformierte von Trans_Gitter
 	
@@ -425,61 +427,36 @@ def fourierNspaltIntegrateAnyFunction(xSchirm,n,a,d,errortype,error_array,wl,zs)
 	integral =  scipy.real(np.square(np.multiply(n,integral)))
 	return integral
 
-def fourierGitterIntegrateAnyFunction(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-	# Fouriertransformierte von Trans_Gitter
+def fftCanvas2D_XYZ(imagearray,wl,zs): ## 1 pixel = 0.1 um
+	## 2D Berechnung
+	N = 800 ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+	x_Spalt = np.array(np.linspace(-N/2*1e-7,N/2*1e-7,N))   ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+	y_Spalt = np.array(np.linspace(-N/2*1e-7,N/2*1e-7,N))   ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
 	
-	## bietet die Moeglichkeit eine beliebige Funktion fuer das Gitter in 'Trans_NSpalt(y,n,a,d)' einzusetzen
+	z2D = np.hstack((np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2))), imagearray,
+					 np.zeros(shape=(imagearray.shape[0], int((N-imagearray.shape[1])/2)))))
+	z2D = np.vstack((np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1]))), z2D,
+					 np.zeros(shape=(int((N-z2D.shape[0])/2),int(z2D.shape[1])))))
 	
-	u = k(wl)*sin(arctan(xSchirm/zs))
-	v = k(wl)*sin(arctan(ySchirm/zs))
-	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-	def f(x,y):
-		return Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
-	
-	def real_f(x,y):
-		return scipy.real(f(x,y))
-	def imag_f(x,y):
-		return scipy.imag(f(x,y))
+	deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist fuer x- und y-Richtung gleich
+	fa = 1.0/deltax #Nyquist-Frequenz
+	Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
+	# zurueckgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
+	# hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
+	# unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
+	# so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehoert.
+	# So wird Xf berechnet, welches jedem Intensitaetswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
+	Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
 
+	index_low =  np.argmax(Xf>-5.0) #Beschraenke den Plot auf -5m bis +5m auf dem Screen
+	index_high = np.argmax(Xf>5.0)
+	if index_high==0:
+		index_high = len(Xf)
+	X_Schirm, Y_Schirm = np.meshgrid(Xf,Yf)#[index_low:index_high],Yf[index_low:index_high])
 	
-	real_integral = integrate.dblquad(real_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
-	imag_integral = integrate.dblquad(imag_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
-	
-	totalint = (real_integral + i()*imag_integral)
-	return np.square(totalint)
-	
-	 
-	
-	
-def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
-	# Fouriertransformierte von Trans_1Spalt
-	# Siehe Glg 29 im Theory doc.pdf
-	# https://en.wikipedia.org/wiki/Dirac_delta_function#Translation folgend
-	# ist f(t) gefaltet mit dirac(t-T) ist gleich f(t-T)
-	# außerdem gilt distributivitaet (a+b) (*) c = a(*)c + b(*)c
-	# fuer den Doppelspalt bzw. n-Spalt haben wir also
-	u = k(wl)*sin(arctan(x/zs))
-	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-	f = lambda y:  Trans_1Spalt(y,a) *exp(-i()*u*y) 
-	r = 0
-	#Fuehre einen Multiplikationsfaktor ein. Dieser Faktor entspricht dem aus Glg 34 ff.
-	#Fuer jeden Spalt finden wir den Mittelpunkt und addieren entsprechend die 
-	#Fouriertransformation dieser Dirac funktion. Die Breite a dieser ganzen Spalte ist durch
-	#die Funktion f mit der Transmission eines Spaltes festgelegt.
-	#Hier ist also noch eine Verbesserung notwendig, die uns ermoeglicht unterschiedlich breite
-	#Spalte einzubauen.
+	z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N)) #[index_low:index_high,index_low:index_high]
+	return X_Schirm, Y_Schirm, z2Df
 
-	mittelpunkteDerLoecher = NSpalt_Mittelpunkte(n,d)
-	for pkt in mittelpunkteDerLoecher:
-		r = r + (exp(i()*u*pkt))
-
-	if(n==1):
-		r = 1
-	integral = complex_int(f,-a,a)
-	#scipy.real koennte man weg lassen, da korrekterweise der imaginaer Teil immer null ist. Aber damit
-	#matplot keine Warnung ausgibt, schmeissen wir den img Teil hier weg.
-	integral =  scipy.real(np.square(n * np.multiply(integral,r)))
-	return integral
 
 ####__________________________________________________________________
 #### Transmissionsfunktion verschiedener Objekte
