@@ -112,7 +112,7 @@ def main():
 	matplotlib.rcParams.update({'font.size': 20}) ## change font size
 
 	
-	if nx==0 or ny==0:
+	if nx==0 and ny==0:
 		print('Ohne Gitter gibt es keine Berechnung...')
 		sys.exit(0)
 
@@ -151,7 +151,10 @@ def Err_matrix_init(nx,ny,errortype):
 			for j in range(nx):
 				error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
 			matrix.append(error_row)
-	
+		#falls ny==0 sollen die spalte unendlich lang sein. Fehler ist nicht möglich
+		if ny==0 or nx==0:
+			matrix.append([[[0,0],[0,0]]])
+
 	return np.array(matrix)
 
 
@@ -260,6 +263,8 @@ class nlcmap(LinearSegmentedColormap):
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
 def DFT_2D_Periodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  
+	#Nutzt aus, dass wir die Fouriertransformation vom Einzelspalt kennen, anstatt sie auszurechnen. 
+	#Ist also eine Kombination aus analytischem Ergebnis und DFT.
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
 	subArrayX= []
@@ -588,16 +593,18 @@ def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 ####__________________________________________________________________
 
 def Calc_Ana_2Spalt(x,a,d,wl,zs):
-	#cos(pi*d sin(alpha_x)^2 / (ws) sin^2(pi() a sin(alpha_x)/ws) {(\pi a \sin(\alpha)/\lambda)^2
-	print(pi)
-	return 1
+	sinalphax = sin(arctan(x/zs))
+	return cos(pi*d*sinalphax/ (ws))**2 * (sin(pi*a*sinalphax/ws)**2) / ((pi*a*sinalphax/wl)**2)
 
 def Calc_Ana_NSpalt(X,n,a,d,wl,zs):
 	return_vec = []
 	for x in X:
 		alphax = arctan(x/zs)
+		sinalphax = sin(arctan(x/zs))
 		if n==0:
 			return_vec.append(1)
+		elif n==2:
+			return_vec.append(cos(pi*d*sinalphax/ (wl))**2 * (sin(pi*a*sinalphax/wl)**2) / ((pi*a*sinalphax/wl)**2))
 		elif x==0:
 			return_vec.append((n*a)**2)
 			#return_vec.append((a * sinc(pi*a/wl*sin(alphax)))**2)
@@ -608,15 +615,10 @@ def Calc_Ana_NSpalt(X,n,a,d,wl,zs):
 	return return_vec
 
 def Calc_Ana_Gitter(X,Y,nx,ny,ax,ay,dx,dy,wl,zs):
-	if nx == 2 and ny==0:
-		x_arr = Calc_Ana_2Spalt(x,a,d,wl,zs)
-		mesh_x, mesh_y = np.meshgrid(x_arr,1)
-		return mesh_x * mesh_y
-	else:
-		x_arr = Calc_Ana_NSpalt(X,nx,ax,dx,wl,zs)
-		y_arr = Calc_Ana_NSpalt(Y,ny,ay,dy,wl,zs)
-		x_mat, y_mat = np.meshgrid(x_arr,y_arr)
-		return x_mat*y_mat
+	x_arr = Calc_Ana_NSpalt(X,nx,ax,dx,wl,zs)
+	y_arr = Calc_Ana_NSpalt(Y,ny,ay,dy,wl,zs)
+	x_mat, y_mat = np.meshgrid(x_arr,y_arr)
+	return x_mat*y_mat
 
 ####__________________________________________________________________
 #### Hauptfunktionen fuer n Spalte, Gitter, Gitter mit Fehlstelle etc..
@@ -724,7 +726,7 @@ def Main_Canvas(wl,zs):
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		
 	### Init and Parameters for plotting
-	resolution = 150
+	resolution = 50
 	x1  = np.linspace(-5., 5., resolution)
 	y1  = np.linspace(-5., 5., resolution)
 	X,Y = np.meshgrid(x1, y1)
