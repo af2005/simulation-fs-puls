@@ -587,6 +587,10 @@ def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 #### wir das am Ende so machen koennen. Fuer einen Einzelspalt geht es
 ####__________________________________________________________________
 
+def Calc_Ana_2Spalt(x,a,d,wl,zs):
+	#cos(pi*d sin(alpha_x)^2 / (ws) sin^2(pi() a sin(alpha_x)/ws) {(\pi a \sin(\alpha)/\lambda)^2
+	print(pi)
+	return 1
 
 def Calc_Ana_NSpalt(X,n,a,d,wl,zs):
 	return_vec = []
@@ -604,10 +608,15 @@ def Calc_Ana_NSpalt(X,n,a,d,wl,zs):
 	return return_vec
 
 def Calc_Ana_Gitter(X,Y,nx,ny,ax,ay,dx,dy,wl,zs):
-	x_arr = Calc_Ana_NSpalt(X,nx,ax,dx,wl,zs)
-	y_arr = Calc_Ana_NSpalt(Y,ny,ay,dy,wl,zs)
-	x_mat, y_mat = np.meshgrid(x_arr,y_arr)
-	return x_mat*y_mat
+	if nx == 2 and ny==0:
+		x_arr = Calc_Ana_2Spalt(x,a,d,wl,zs)
+		mesh_x, mesh_y = np.meshgrid(x_arr,1)
+		return mesh_x * mesh_y
+	else:
+		x_arr = Calc_Ana_NSpalt(X,nx,ax,dx,wl,zs)
+		y_arr = Calc_Ana_NSpalt(Y,ny,ay,dy,wl,zs)
+		x_mat, y_mat = np.meshgrid(x_arr,y_arr)
+		return x_mat*y_mat
 
 ####__________________________________________________________________
 #### Hauptfunktionen fuer n Spalte, Gitter, Gitter mit Fehlstelle etc..
@@ -715,7 +724,7 @@ def Main_Canvas(wl,zs):
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		
 	### Init and Parameters for plotting
-	resolution = 50
+	resolution = 150
 	x1  = np.linspace(-5., 5., resolution)
 	y1  = np.linspace(-5., 5., resolution)
 	X,Y = np.meshgrid(x1, y1)
