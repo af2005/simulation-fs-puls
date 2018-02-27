@@ -259,7 +259,7 @@ class nlcmap(LinearSegmentedColormap):
 ####__________________________________________________________________
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
-def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  
+def DFT_2D_Periodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
 	subArrayX= []
@@ -269,19 +269,19 @@ def fourierNspaltPeriodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):
 		if nx==0:
 			subArrayX.append(1)
 		else:
-			subArrayX.append(float(fourierNspaltPeriodischIntegrate(x,nx,ax,dx,wl,zs)))
+			subArrayX.append(float(DFT_1D_Periodisch_Integrate(x,nx,ax,dx,wl,zs)))
 	for y in yArray:
 		if ny==0:
 			subArrayY.append(1)
 		else:
-			subArrayY.append(float(fourierNspaltPeriodischIntegrate(y,ny,ay,dy,wl,zs)))
+			subArrayY.append(float(DFT_1D_Periodisch_Integrate(y,ny,ay,dy,wl,zs)))
 		
 	XX, YY = np.meshgrid(np.array(subArrayX),np.array(subArrayY))
 	Ztmp=XX*YY
 
 	return Ztmp
 
-def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
+def DFT_1D_Periodisch_Integrate(x,n,a,d,wl,zs):
 	u = k(wl)*sin(arctan(x/zs))
 	f = lambda y:  Trans_1Spalt(y,a) *exp(-i()*u*y) 
 	r = 0
@@ -296,7 +296,7 @@ def fourierNspaltPeriodischIntegrate(x,n,a,d,wl,zs):
 	integral =  scipy.real(np.square(n * np.multiply(integral,r)))
 	return integral
 
-def fourierGitterAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def DFT_2D_Any(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	## bietet die Moeglichkeit beliebige Funktion fuer das Gitter einzusetzen
 	
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
@@ -306,13 +306,13 @@ def fourierGitterAnyFunction(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_mat
 	
 	for y in yArray:
 		for x in xArray:
-			subArrayX.append(float(fourierGitterIntegrateAnyFunction(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)))
+			subArrayX.append(float(DFT_2D_Any_Integrate(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)))
 		Ztotal.append(subArrayX)
 		subArrayX=[]
 		
 	return np.array(Ztotal)
 
-def fourierGitterIntegrateAnyFunction(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
+def DFT_2D_Any_Integrate(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	# Fouriertransformierte von Trans_Gitter
 	
 	## bietet die Moeglichkeit eine beliebige Funktion fuer das Gitter in 'Trans_NSpalt(y,n,a,d)' einzusetzen
@@ -335,7 +335,7 @@ def fourierGitterIntegrateAnyFunction(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortyp
 	totalint = (real_integral + i()*imag_integral)
 	return np.square(totalint)
 
-def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs):
+def FFT_1D(nx,ax,dx,errortype,error_array,wl,zs):
 	datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
 	while(datapoints*wl/4/nx/dx/10<0.82*2):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
 		datapoints*=2                                     ## 0.82 fuer Plot bis +-5m
@@ -366,16 +366,16 @@ def fftNspalt1D_XZ(nx,ax,dx,errortype,error_array,wl,zs):
 		
 	return X_Schirm, z1Df[index_low:index_high]
 
-def fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimmt, Skalierung noch nicht
+def FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimmt, Skalierung noch nicht
 		
 	
 	if nx==0:  ## then only integrate in y-direction
-		Schirm, z1Dfy = fftNspalt1D_XZ(ny,ay,dy,errortype,error_matrix[:,0,1],wl,zs) ## error_matrix[:,0,1] is the array of the error-values in y-direction
+		Schirm, z1Dfy = FFT_1D(ny,ay,dy,errortype,error_matrix[:,0,1],wl,zs) ## error_matrix[:,0,1] is the array of the error-values in y-direction
 		z1Df_X, z1Df_Y = np.meshgrid(np.ones(len(z1Dfy)),z1Dfy)
 		z2Df = z1Df_X * z1Df_Y
 		X_Schirm, Y_Schirm = np.meshgrid(Schirm,Schirm)
 	elif ny==0: ## then only integrate in x-direction
-		Schirm, z1Dfx = fftNspalt1D_XZ(nx,ax,dx,errortype,error_matrix[0,:,0],wl,zs) ## error_matrix[0,:,0] is the array of the error-values in x-direction
+		Schirm, z1Dfx = FFT_1D(nx,ax,dx,errortype,error_matrix[0,:,0],wl,zs) ## error_matrix[0,:,0] is the array of the error-values in x-direction
 		z1Df_X, z1Df_Y = np.meshgrid(z1Dfx,np.ones(len(z1Dfx)))
 		z2Df = z1Df_X * z1Df_Y
 		X_Schirm, Y_Schirm = np.meshgrid(Schirm,Schirm)
@@ -426,7 +426,7 @@ def fourierNspaltIntegrateAnyFunction(xSchirm,n,a,d,errortype,error_array,wl,zs)
 	integral =  scipy.real(np.square(np.multiply(n,integral)))
 	return integral
 
-def fftCanvas2D_XYZ(imagearray,wl,zs): ## 1 pixel = 0.1 um
+def FFT_2D_Canvas(imagearray,wl,zs): ## 1 pixel = 0.1 um
 	## 2D Berechnung
 	N = 800 ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
 	x_Spalt = np.array(np.linspace(-N/2*1e-7,N/2*1e-7,N))   ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
@@ -658,7 +658,7 @@ def Main_Canvas(wl,zs):
 	def drawPlot():
 		trans=np.array(imagearray)
 		X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2,trans.shape[1]/2,trans.shape[1]), np.linspace(-trans.shape[0]/2,trans.shape[0]/2,trans.shape[0]))
-		X,Y,Z, Z_back = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
+		X,Y,Z, Z_back = FFT_2D_Canvas(np.array(imagearray),wl,zs/30)
 
 		#Ruecktransformation
 
@@ -734,11 +734,11 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 	if dft == "true":
 		### DFT
 		start_time_dft = time.time()
-		intensity_DFT  = fourierGitterAnyFunction(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+		intensity_DFT  = DFT_2D_Any(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
 		# faster algorithm for a grid without errors, using symmetries and the known result of
 		#   the fourier transformation of multiple slits compared to a single slit and thus being
 		#   much faster
-		#intensity_DFT  = fourierNspaltPeriodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		#intensity_DFT  = DFT_2D_Periodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 		intensity_DFT /= intensity_DFT.max() #normierung
 		total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
 		print("DFT Berechnung dauerte: " + total_time_dft)
@@ -754,7 +754,7 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 
 	### FFT
 	start_time_fft = time.time()
-	XX, YY, intensity_fft = fftNspalt2D_XYZ(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	XX, YY, intensity_fft = FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
 	intensity_fft/=intensity_fft.max()
 	total_time_fft =  formatSecToMillisec(time.time() - start_time_fft)
 	print("FFT Berechnung dauerte: " + total_time_fft)
