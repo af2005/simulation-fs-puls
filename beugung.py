@@ -41,9 +41,8 @@ from tkinter import *
 
 ####### TODOS ######
 '''
-	- Canvas result update instead of redraw
+	- Canvas result update instead of redraw (low)
 	- DFT ohne Ausnutzung von Symmetrien
-	- Ruecktransformation des Nikolaushauses
 
 moeglich:
 	- Uberlagerung von verschiendenen Wellenlaengen
@@ -454,8 +453,13 @@ def fftCanvas2D_XYZ(imagearray,wl,zs): ## 1 pixel = 0.1 um
 		index_high = len(Xf)
 	X_Schirm, Y_Schirm = np.meshgrid(Xf,Yf)#[index_low:index_high],Yf[index_low:index_high])
 	
-	z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N)) #[index_low:index_high,index_low:index_high]
-	return X_Schirm, Y_Schirm, z2Df
+	z_fft = fft2(z2D)
+
+	z2Df = fftshift(np.square(np.abs(z_fft))) #[index_low:index_high,index_low:index_high]
+	#Ruecktransformation
+	z2Df_back = (np.square(np.abs(fft2(z_fft)))) #[index_low:index_high,index_low:index_high]
+
+	return X_Schirm, Y_Schirm, z2Df, z2Df_back
 
 
 ####__________________________________________________________________
@@ -654,21 +658,32 @@ def Main_Canvas(wl,zs):
 	def drawPlot():
 		trans=np.array(imagearray)
 		X_trans, Y_trans = np.meshgrid(np.linspace(-trans.shape[1]/2,trans.shape[1]/2,trans.shape[1]), np.linspace(-trans.shape[0]/2,trans.shape[0]/2,trans.shape[0]))
-		X,Y,Z = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
+		X,Y,Z, Z_back = fftCanvas2D_XYZ(np.array(imagearray),wl,zs/30)
+
+		#Ruecktransformation
+
+
 		Z /= np.nanmax(Z)
 
 		levels_Z = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
 		cmap_lin = plt.cm.Reds
 		cmap_nonlin_Z = nlcmap(cmap_lin, levels_Z)
 		
-		fig, ax = plt.subplots(nrows=1, ncols=2)
+		fig, ax = plt.subplots(nrows=1, ncols=3)
 	
-		plt.subplot(1,2,1)
+		plt.subplot(1,3,1)
+		plt.subplot(1,3,1).set_title("Objektebene")
 		plt.contourf(X_trans,-Y_trans,trans,cmap='gray')
+
 		
-		plt.subplot(1,2,2)
+		plt.subplot(1,3,2)
+		plt.subplot(1,3,2).set_title("Schirm (FFT)")
 		plt.contourf(X,Y,Z,levels=levels_Z,cmap=cmap_nonlin_Z)
 		plt.colorbar()
+
+		plt.subplot(1,3,3)
+		plt.subplot(1,3,3).set_title("Ruecktransformation")
+		plt.contourf(-X_trans,Y_trans,Z_back,cmap='gray')
 				
 		plt.show()	
 
