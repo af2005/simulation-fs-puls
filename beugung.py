@@ -41,11 +41,9 @@ from tkinter import *
 
 ####### TODOS ######
 '''
-	- DFT ohne Ausnutzung von Symmetrien
-
 moeglich:
 	- Uberlagerung von verschiendenen Wellenlaengen
-	- mehrere Gitter
+	- mehrere Gitter hintereinander
 	- Einfallswinkel von 90 deg verschieden
 '''
 
@@ -76,8 +74,6 @@ def main():
 	print('------------------------------------------------------------------------------')
 	print('')
 	print('Es wurden folgende Parameter eingegeben oder angenommen'                       )
-	#print('   Dimension                                  :  ' + str(args.dimension))
-	#print('   Falls Dimension = 1, berechnen wir fuer     :')
 	print('   Anzahl der Spalte:')
 	print('      nx=' + str(args.nx) + ' Spalte in horizontaler Richtung(x)'              )
 	print('      ny=' + str(args.ny) + ' Spalte in vertikaler Richtung(y)'                )
@@ -143,9 +139,9 @@ def Err_matrix_init(nx,ny,errortype):
 			error_row=[]
 			for j in range(nx):
 				if(random.randint(0, 100) > 15):
-					error_row.append([[1,1,1,1]])
+					error_row.append([[1,1],[1,1]])
 				else:
-					error_row.append([[0,0,0,0]])
+					error_row.append([[0,0],[0,0]])
 			matrix.append(error_row)
 	else: #error type 1
 		matrix = []
@@ -155,8 +151,8 @@ def Err_matrix_init(nx,ny,errortype):
 				error_row.append([[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)],[random.uniform(-0.2,0.2),random.uniform(0.9,1.1)]])
 			matrix.append(error_row)
 		#falls ny==0 sollen die spalte unendlich lang sein. Fehler ist nicht möglich
-		if ny==0 or nx==0:
-			matrix.append([[[0,0],[0,0]]])
+		#if ny==0 or nx==0:
+		#	matrix.append([[[0,0],[0,0]]])
 
 	return np.array(matrix)
 
@@ -265,6 +261,7 @@ class nlcmap(LinearSegmentedColormap):
 ####__________________________________________________________________
 #### Berechnungsfunktionen mittels Fouriertransformation 
 ####__________________________________________________________________ 
+
 def DFT_2D_Periodisch(xArray,yArray,nx,ny,ax,ay,dx,dy,wl,zs):  
 	#Nutzt aus, dass wir die Fouriertransformation vom Einzelspalt kennen, anstatt sie auszurechnen. 
 	#Ist also eine Kombination aus analytischem Ergebnis und DFT.
@@ -337,15 +334,15 @@ def DFT_2D_Any_Integrate(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matri
 		return scipy.imag(f(x,y))
 
 	
-	real_integral = integrate.dblquad(real_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
-	imag_integral = integrate.dblquad(imag_f, -(ny-1)*dy/2-ay, (ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+	real_integral = integrate.dblquad(real_f, lambda y:-(ny-1)*dy/2-ay, lambda y:(ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+	imag_integral = integrate.dblquad(imag_f, lambda y:-(ny-1)*dy/2-ay, lambda y:(ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
 	
-	totalint = (real_integral + i()*imag_integral)
-	return np.square(totalint)
+	totalint = (np.square(real_integral) + np.square(imag_integral))
+	return totalint
 
 def FFT_1D(nx,ax,dx,errortype,error_array,wl,zs):
-	datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-	while(datapoints*wl/(40*nx*dx) < 0.82):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+	datapoints = kgV_arr([int(dx*1e6*2*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
+	while(datapoints*wl/(4*nx*dx) < 0.82):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
 		datapoints*=2                                     ## 0.82 fuer Plot bis +-5m
 	datapoints = datapoints +1                                    ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
 	
@@ -392,8 +389,8 @@ def FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,schirmgroesse): ##Erge
 		d = max(dx,dy)
 		n = max(nx,ny)
 		a = max(ax,ay)
-		datapoints = kgV_arr([int(d*1e6*20*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-		while(datapoints*wl/(40*n*d) < 0.82):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+		datapoints = kgV_arr([int(d*1e6*2*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
+		while(datapoints*wl/(4*n*d) < 0.82):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
 			datapoints*=2                                   ## 0.82*2 fuer Plot bis +-5m
 		datapoints = int(datapoints)+1                                   ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
 		x_Spalt = np.array(np.linspace(-n*d,n*d,datapoints))   
@@ -503,34 +500,9 @@ def Trans_NSpalt(x,n,a,d,errortype,error_array):
 	elif errortype == 2:
 		#there is a 15% chance that an hole is missing
 		for i in range(n):
-			gesamttransmission += Trans_1Spalt(x-d*(i-n/2+0.5),a) * int(error_array[i][0])
+			gesamttransmission += Trans_1Spalt(x-d*(i-n/2+0.5),a) * int(error_array[i,0])
 
 	return gesamttransmission
-def Trans_Gitter_float_ALEX(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
-	Ztmp=[]
-	xtmp = 0.
-	ytmp = 0.
-
-	for i in range(max(nx,1)):
-		for j in range(max(ny,1)):
-			if nx==0:
-				xtmp = 1
-			elif x > ((i-1-(nx-2)/2)*dx) and x <= ((i-(nx-2)/2)*dx):
-				xtmp = Trans_NSpalt(x,nx,ax,dx,errortype,error_matrix[j,:,0])
-			else:
-				xtmp = 0
-
-			if ny==0:
-				ytmp = 1
-			elif y > ((j-1-(ny-2)/2)*dy) and y <= ((j-(ny-2)/2)*dy):
-				ytmp = Trans_NSpalt(y,ny,ay,dy,errortype,error_matrix[:,i,1]) #why is [:,i,1] not [:,i,0] ??
-			else:
-				ytmp = 0
-					
-	alextry = xtmp*ytmp
-	if alextry != 0:
-		print(str(alextry))
-	return alextry
 
 def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	
@@ -543,7 +515,8 @@ def Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 				# soll jede einzelne Koordinate (x,y) nehmen und schauen, ob dort Durchlass (0,1) ist
 				# Transmission in x-Richtung am Punkt (x,y) für alle Spalte (nx,ny)       *  Transmission in y-Richtung am Punkt (x,y) für alle Spalte (nx,ny)
 				trans+=Trans_1Spalt(x+error_matrix[j,i,0,0]*ax-dx*(i-nx/2+0.5),ax*error_matrix[j,i,0,1])*Trans_1Spalt(y+error_matrix[j,i,1,0]*ay-dy*(j-ny/2+0.5),ay*error_matrix[j,i,1,1])
-			
+			elif errortype==2:
+				trans+=Trans_1Spalt(x+error_matrix[j,i,0,0]*ax-dx*(i-nx/2+0.5),ax*error_matrix[j,i,0,1])*Trans_1Spalt(y+error_matrix[j,i,1,0]*ay-dy*(j-ny/2+0.5),ay*error_matrix[j,i,1,1])
 	return trans
 	
 def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
@@ -658,9 +631,6 @@ def Main_Canvas(wl,zs):
 				tempy = tempy+1
 			tempx = tempx + 1	
 
-		#print("durchlaufx" + str(durchlaufx))
-		#print("durchlaufy" + str(durchlaufy))
-
 	def paint( event ):
 		draw_color = "#FFFFFF"
 		x1, y1 = ( event.x - drawradius ), ( event.y - drawradius)
@@ -714,15 +684,6 @@ def Main_Canvas(wl,zs):
 	message = Label( master, text = "Press and Drag the mouse to draw." )
 	message.pack( side = BOTTOM )
 	mainloop()	
-	
-	'''
-	### Output imagearray in a better format then print for easy comparism with the drawn picture
-	for row in imagearray:
-		rowcontent = ""
-		for entry in row:
-			rowcontent += str(entry)
-		print(rowcontent)
-	'''
 
 
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
@@ -813,12 +774,6 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		plt.subplot2grid((1,3), (0, 0))
 		plt.pcolor(x_obj_mesh*1000000, y_obj_mesh*1000000,intensity_obj_error, cmap='gray')
 
-		'''
-		plt.subplot2grid((1, 3), (0, 1))
-		plt.subplot2grid((1, 3), (0, 1)).set_title("DFT. t=" + total_time_dft)
-		plt.contourf(X,Y,intensity_DFT,levels=levels_screen,cmap=cmap_nonlin)
-		plt.colorbar()
-		'''
 		plt.subplot2grid((1,3), (0, 1),colspan=2).set_title("FFT. t=" +total_time_fft)
 		plt.contourf(XX,YY,intensity_fft,levels=levels_screen,cmap=cmap_nonlin)
 		plt.colorbar()
