@@ -41,7 +41,6 @@ from tkinter import *
 
 ####### TODOS ######
 '''
-	- Canvas result update instead of redraw (low)
 	- DFT ohne Ausnutzung von Symmetrien
 
 moeglich:
@@ -115,6 +114,10 @@ def main():
 	if nx==0 and ny==0:
 		print('Ohne Gitter gibt es keine Berechnung...')
 		sys.exit(0)
+
+	if nx==0 and ny!=0:
+		nx = ny
+		ny = 0
 
 
 	if canvas == 'true': 
@@ -342,18 +345,18 @@ def DFT_2D_Any_Integrate(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matri
 
 def FFT_1D(nx,ax,dx,errortype,error_array,wl,zs):
 	datapoints = kgV_arr([int(dx*1e6*20*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-	while(datapoints*wl/4/nx/dx/10<0.82*2):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+	while(datapoints*wl/(40*nx*dx) < 0.82):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
 		datapoints*=2                                     ## 0.82 fuer Plot bis +-5m
-	N = datapoints+1                                      ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+	datapoints = datapoints +1                                    ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
 	
-	x_Spalt = np.array(np.linspace(-dx*nx*10,dx*nx*10,N)) ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+	x_Spalt = np.array(np.linspace(-dx*nx,dx*nx,datapoints)) ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
 	
 	deltax = (x_Spalt[1]-x_Spalt[0])
 	fa = 1.0/deltax #Nyquist-Frequenz
-	Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
+	Xf = tan(arcsin(np.linspace(-fa/2,fa/2,datapoints)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
 	# zurueckgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
 	# hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
-	# unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
+	# unter dem der gebeugte Strahl propagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
 	# so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehoert.
 	# So wird Xf berechnet, welches jedem Intensitaetswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
 	
@@ -367,11 +370,11 @@ def FFT_1D(nx,ax,dx,errortype,error_array,wl,zs):
 	Transmission_X = []
 	for x in x_Spalt:
 		Transmission_X.append(Trans_NSpalt(x,nx,ax,dx,errortype,error_array))
-	z1Df = fftshift(np.square(np.abs(fft(Transmission_X))*2/N))
+	z1Df = fftshift(np.square(np.abs(fft(Transmission_X))*2/datapoints))
 		
 	return X_Schirm, z1Df[index_low:index_high]
 
-def FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimmt, Skalierung noch nicht
+def FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,schirmgroesse): ##Ergebnisform stimmt, Skalierung noch nicht
 		
 	
 	if nx==0:  ## then only integrate in y-direction
@@ -390,30 +393,30 @@ def FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs): ##Ergebnisform stimm
 		n = max(nx,ny)
 		a = max(ax,ay)
 		datapoints = kgV_arr([int(d*1e6*20*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-		while(datapoints*wl/4/n/d/10<0.82*2):               ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+		while(datapoints*wl/(40*n*d) < 0.82):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
 			datapoints*=2                                   ## 0.82*2 fuer Plot bis +-5m
-		N = datapoints+1                                    ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
-		x_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
-		y_Spalt = np.array(np.linspace(-n*d*10,n*d*10,N))   ## waehle großen Bereich fuer die Transmissionsfunktion, damit die x-Skalierung nach der fft feiner ist
+		datapoints = int(datapoints)+1                                   ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
+		x_Spalt = np.array(np.linspace(-n*d,n*d,datapoints))   
+		y_Spalt = np.array(np.linspace(-n*d,n*d,datapoints))   
 
 		deltax = (x_Spalt[1]-x_Spalt[0]) #Sampling-Rate ist fuer x- und y-Richtung gleich
 		fa = 1.0/deltax #Nyquist-Frequenz
-		Xf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
+		Xf = tan(arcsin(np.linspace(-fa/2,fa/2,datapoints)*wl))*zs  #Datenpunkte der fft als k-Vektoren im np.linspace(..)
 		# zurueckgerechnet in x-/y-Positionen auf dem Schirm via Gl. LS(k) = integral(transmission(x)*exp(-2*pi*i*k*x)dx)
 		# hierbei ist k die Wellenzahl und somit gibt LS(k)/k0=LS(k)*wl=sin(alphax) den Winkel zur Stahlachse an,
 		# unter dem der gebeugte Strahl probagiert. Mit Hilfe des tan(alphax) und der Schirmentfernung zs findet sich
 		# so durch tan(alphax)*wl=tan(arcsin(LS(k)*wl))*zs die x-Koordinate auf dem Schirm, zu der der k-Vektor der fft gehoert.
 		# So wird Xf berechnet, welches jedem Intensitaetswert aus der fft den richtigen Punkt auf dem Schirm zuordnet
-		Yf = tan(arcsin(np.linspace(-fa/2,fa/2,N)*wl))*zs
+		Yf = tan(arcsin(np.linspace(-fa/2,fa/2,datapoints)*wl))*zs
 
-		index_low =  np.argmax(Xf>-5.0) #Beschraenke den Plot auf -5m bis +5m auf dem Screen
-		index_high = np.argmax(Xf>5.0)
+		index_low =  np.argmax(Xf>-schirmgroesse) #Beschraenke den Plot auf -5m bis +5m auf dem Screen
+		index_high = np.argmax(Xf>schirmgroesse)
 		if index_high==0:
 			index_high = len(Xf)
 		X_Schirm, Y_Schirm = np.meshgrid(Xf[index_low:index_high],Yf[index_low:index_high])
 		
 		z2D = Trans_Gitter(x_Spalt,y_Spalt,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
-		z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/N/N))[index_low:index_high,index_low:index_high]
+		z2Df = fftshift(np.square(np.abs(fft2(z2D))*4/(datapoints**2)))[index_low:index_high,index_low:index_high]
 	return X_Schirm, Y_Schirm, z2Df
 
 def fourierNspaltIntegrateAnyFunction(xSchirm,n,a,d,errortype,error_array,wl,zs):
@@ -594,17 +597,16 @@ def Trans_Gitter(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix):
 
 def Calc_Ana_2Spalt(x,a,d,wl,zs):
 	sinalphax = sin(arctan(x/zs))
-	return cos(pi*d*sinalphax/ (ws))**2 * (sin(pi*a*sinalphax/ws)**2) / ((pi*a*sinalphax/wl)**2)
+	return cos(pi*d*sinalphax/ (wl))**2 * (sin(pi*a*sinalphax/wl)**2) / ((pi*a*sinalphax/wl)**2)
 
 def Calc_Ana_NSpalt(X,n,a,d,wl,zs):
 	return_vec = []
 	for x in X:
 		alphax = arctan(x/zs)
-		sinalphax = sin(arctan(x/zs))
 		if n==0:
 			return_vec.append(1)
 		elif n==2:
-			return_vec.append(cos(pi*d*sinalphax/ (wl))**2 * (sin(pi*a*sinalphax/wl)**2) / ((pi*a*sinalphax/wl)**2))
+			return_vec.append(Calc_Ana_2Spalt(x,a,d,wl,zs))
 		elif x==0:
 			return_vec.append((n*a)**2)
 			#return_vec.append((a * sinc(pi*a/wl*sin(alphax)))**2)
@@ -726,11 +728,12 @@ def Main_Canvas(wl,zs):
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		
 	### Init and Parameters for plotting
-	resolution = 50
-	x1  = np.linspace(-5., 5., resolution)
-	y1  = np.linspace(-5., 5., resolution)
+	resolution = 100
+	schirmgroesse = 5.0
+	x1  = np.linspace(-schirmgroesse, schirmgroesse, resolution)
+	y1  = np.linspace(-schirmgroesse, schirmgroesse, resolution)
 	X,Y = np.meshgrid(x1, y1)
-	levels_screen = [0, 1./1000., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
+	levels_screen = [0, 1./800., 1./300., 1./100., 1./30., 1./10., 1./3., 1.]
 	cmap_lin = plt.cm.Reds
 	cmap_nonlin = nlcmap(cmap_lin, levels_screen)
 
@@ -742,18 +745,6 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 	intensity_obj       = Trans_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,0,error_matrix)
 	intensity_obj_error = Trans_Gitter(x_obj,y_obj,nx,ny,ax,ay,dx,dy,errortype,error_matrix)
 	
-	if dft == "true":
-		### DFT
-		start_time_dft = time.time()
-		intensity_DFT  = DFT_2D_Any(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
-		# faster algorithm for a grid without errors, using symmetries and the known result of
-		#   the fourier transformation of multiple slits compared to a single slit and thus being
-		#   much faster
-		#intensity_DFT  = DFT_2D_Periodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
-		intensity_DFT /= intensity_DFT.max() #normierung
-		total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
-		print("DFT Berechnung dauerte: " + total_time_dft)
-
 	if errortype == 0:
 		### Analyisch
 		start_time_anal = time.time()
@@ -763,9 +754,22 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		print("Analytische Berechnung dauerte: " + total_time_anal)
 	
 
+	if dft == "true":
+		### DFT
+		start_time_dft = time.time()
+		intensity_DFT  = DFT_2D_Periodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		# faster algorithm for a grid without errors, using symmetries and the known result of
+		#   the fourier transformation of multiple slits compared to a single slit and thus being
+		#   much faster
+		#intensity_DFT  = DFT_2D_Periodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		intensity_DFT /= intensity_DFT.max() #normierung
+		total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
+		print("DFT Berechnung (unter Ausnutzung von Symmetrien und Kenntnis der FT vom 1Spalt) dauerte: " + total_time_dft)
+
+	
 	### FFT
 	start_time_fft = time.time()
-	XX, YY, intensity_fft = FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+	XX, YY, intensity_fft = FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,schirmgroesse)
 	intensity_fft/=intensity_fft.max()
 	total_time_fft =  formatSecToMillisec(time.time() - start_time_fft)
 	print("FFT Berechnung dauerte: " + total_time_fft)
