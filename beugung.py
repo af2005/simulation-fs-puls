@@ -392,7 +392,7 @@ def FFT_2D(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,schirmgroesse): ##Erge
 		n = max(nx,ny)
 		a = max(ax,ay)
 		datapoints = kgV_arr([int(d*1e6*2*n),int(a*1e6)])  ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
-		while(datapoints*wl/(4*n*d) < 0.82):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
+		while(datapoints*wl/(4*n*d) < (0.82/5)*schirmgroesse):                 ## erhoehe Datapoints, damit mindestens die Raumfrequenzen berechnet werden, die auf dem Schirm abgebildet werden
 			datapoints*=2                                   ## 0.82*2 fuer Plot bis +-5m
 		datapoints = int(datapoints)+1                                   ## Datenpunkte im ganzen Array, mit Anfang- und Endpunkt, daher +1
 		x_Spalt = np.array(np.linspace(-n*d,n*d,datapoints))   
@@ -691,8 +691,8 @@ def Main_Canvas(wl,zs):
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		
 	### Init and Parameters for plotting
-	resolution = 40
-	schirmgroesse = 4.0
+	resolution = 100
+	schirmgroesse = 5.0
 	x1  = np.linspace(-schirmgroesse, schirmgroesse, resolution)
 	y1  = np.linspace(-schirmgroesse, schirmgroesse, resolution)
 	X,Y = np.meshgrid(x1, y1)
