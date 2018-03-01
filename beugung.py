@@ -306,6 +306,7 @@ def DFT_2D_Any(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	
 	#Diese Funktion dient nur dafuer nicht mit einem Array an x Werten arbeiten zu muessen, was 
 	#beim Integrieren bzw bei der fft schief geht.
+
 	Ztotal=[]
 	subArrayX=[]
 	
@@ -317,6 +318,7 @@ def DFT_2D_Any(xArray,yArray,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 		
 	return np.array(Ztotal)
 
+
 def DFT_2D_Any_Integrate(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs):
 	# Fouriertransformierte von Trans_Gitter
 	
@@ -324,21 +326,21 @@ def DFT_2D_Any_Integrate(xSchirm,ySchirm,nx,ny,ax,ay,dx,dy,errortype,error_matri
 	
 	u = k(wl)*sin(arctan(xSchirm/zs))
 	v = k(wl)*sin(arctan(ySchirm/zs))
-	#lambda x sagt python nur dass das die Variable ist und nach der integriert werden muss
-	def f(x,y):
-		return Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)*exp(-i()*(u*x+v*y))
-	
-	def real_f(x,y):
-		return scipy.real(f(x,y))
-	def imag_f(x,y):
-		return scipy.imag(f(x,y))
+	def DFT_2D_Any_Integration_Function(y,x,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,u,v):
+		tr = Trans_Gitter_float(x,y,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
+		if ( tr != 0):
+			return tr * exp(complex(0,-1)*(u*x+v*y))
+		else: 
+			return 0
 
+
+	integral,error = integrate.dblquad(DFT_2D_Any_Integration_Function,-(ny-1)*dy/2-ay,(ny-1)*dy/2+ay , lambda x: -(nx-1)*dx/2-ax, lambda x: (nx-1)*dx/2+ax, args=(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,u,v))
 	
-	real_integral = integrate.dblquad(real_f, lambda y:-(ny-1)*dy/2-ay, lambda y:(ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
-	imag_integral = integrate.dblquad(imag_f, lambda y:-(ny-1)*dy/2-ay, lambda y:(ny-1)*dy/2+ay, lambda x:-(nx-1)*dx/2-ax, lambda x:(nx-1)*dx/2-ax)[0]
+	#integral,error = integrate.nquad(simple_integration, [[u,v],[1,2]])
+
+	integral = np.square(integral)
 	
-	totalint = (np.square(real_integral) + np.square(imag_integral))
-	return totalint
+	return integral
 
 def FFT_1D(nx,ax,dx,errortype,error_array,wl,zs):
 	datapoints = kgV_arr([int(dx*1e6*2*nx),int(ax*1e6)]) ## minimale Anzahl an Datenpunkten, damit an jedem Spaltrand ein Punkt liegt
@@ -689,8 +691,8 @@ def Main_Canvas(wl,zs):
 def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 		
 	### Init and Parameters for plotting
-	resolution = 100
-	schirmgroesse = 5.0
+	resolution = 40
+	schirmgroesse = 4.0
 	x1  = np.linspace(-schirmgroesse, schirmgroesse, resolution)
 	y1  = np.linspace(-schirmgroesse, schirmgroesse, resolution)
 	X,Y = np.meshgrid(x1, y1)
@@ -718,14 +720,14 @@ def Main_Default(nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs,dft):
 	if dft == "true":
 		### DFT
 		start_time_dft = time.time()
-		intensity_DFT  = DFT_2D_Periodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		#intensity_DFT  = DFT_2D_Periodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
 		# faster algorithm for a grid without errors, using symmetries and the known result of
 		#   the fourier transformation of multiple slits compared to a single slit and thus being
 		#   much faster
-		#intensity_DFT  = DFT_2D_Periodisch(x1,y1,nx,ny,ax,ay,dx,dy,wl,zs)
+		intensity_DFT  = DFT_2D_Any(x1,y1,nx,ny,ax,ay,dx,dy,errortype,error_matrix,wl,zs)
 		intensity_DFT /= intensity_DFT.max() #normierung
 		total_time_dft = formatSecToMillisec(time.time() - start_time_dft)
-		print("DFT Berechnung (unter Ausnutzung von Symmetrien und Kenntnis der FT vom 1Spalt) dauerte: " + total_time_dft)
+		print("DFT Berechnung dauerte: " + total_time_dft)
 
 	
 	### FFT
